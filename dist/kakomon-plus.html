@@ -3450,6 +3450,12 @@ function renderImport(root) {
   function draw() {
     const imported = getImportedExams();
     const importedIds = new Set(imported.map((e) => e.id));
+    // 再描画しても入力途中の内容を失わないように退避
+    const keep = {};
+    for (const id of ['import-json', 'conv-text', 'conv-name', 'conv-year', 'conv-cat']) {
+      const el = root.querySelector(`#${id}`);
+      if (el) keep[id] = el.value;
+    }
 
     root.innerHTML = `
       <div class="card">
@@ -3461,7 +3467,9 @@ function renderImport(root) {
               <span class="badge">${importedIds.has(e.id) ? '取り込み' : '内蔵'}</span>
               <span class="ri-text">${escapeHtml(e.name)}</span>
               <span class="cs" style="color:var(--muted); font-size:12px">${e.questions.length}問</span>
-              ${importedIds.has(e.id) ? `<button class="btn" data-del="${escapeHtml(e.id)}" type="button" style="color:var(--ng); border-color:var(--ng)">削除</button>` : ''}
+              ${importedIds.has(e.id) ? `
+                <button class="btn" data-export="${escapeHtml(e.id)}" type="button">書き出し</button>
+                <button class="btn" data-del="${escapeHtml(e.id)}" type="button" style="color:var(--ng); border-color:var(--ng)">削除</button>` : ''}
             </div>`).join('')}
         </div>
       </div>
@@ -3523,6 +3531,11 @@ function renderImport(root) {
       </div>
     `;
 
+    for (const [id, value] of Object.entries(keep)) {
+      const el = root.querySelector(`#${id}`);
+      if (el && value !== undefined) el.value = value;
+    }
+
     const statusEl = root.querySelector('#import-status');
 
     root.querySelectorAll('[data-del]').forEach((btn) => {
@@ -3535,6 +3548,27 @@ function renderImport(root) {
 
     root.querySelector('#fill-template').addEventListener('click', () => {
       root.querySelector('#import-json').value = SAMPLE_JSON;
+    });
+
+    // 書き出し:JSON を下の入力欄に表示 + 可能ならコピー
+    // (別の端末ではその JSON を貼り付けて「取り込む」だけで同じデータが使える)
+    root.querySelectorAll('[data-export]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const exam = getImportedExams().find((e) => e.id === btn.dataset.export);
+        if (!exam) return;
+        const json = JSON.stringify(exam, null, 2);
+        const area = root.querySelector('#import-json');
+        area.value = json;
+        let msg = `「${exam.name}」を下の入力欄に書き出しました。`;
+        try {
+          await navigator.clipboard.writeText(json);
+          msg += ' クリップボードにもコピー済みです。';
+        } catch {
+          msg += ' 全選択してコピーし、別の端末で貼り付けて取り込んでください。';
+        }
+        statusEl.textContent = msg;
+        area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     });
 
     // テキスト → JSON 変換
