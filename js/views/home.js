@@ -3,6 +3,7 @@
 // ============================================================
 import { EXAM_INFO, QUESTIONS, getQuestionsByCategory } from '../data/questions.js';
 import { getResume, getLatestResults, getSummary, getSettings, updateSettings } from '../storage.js';
+import { escapeHtml } from '../utils.js';
 
 export function renderHome(root) {
   const resume = getResume();
@@ -90,8 +91,4 @@ function amDesc(mode) {
   return mode === 'end'
     ? 'まとめて採点:連続で解き進めて、最後に全問の答え合わせと解説を表示します。'
     : '一問一答:1問解答するごとに正誤と解説をすぐ表示します。';
-}
-
-function escapeHtml(s) {
-  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }

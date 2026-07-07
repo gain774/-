@@ -12,10 +12,7 @@ import {
   getSettings, recordAnswer, saveResume, clearResume, getResume, getLatestResults,
 } from '../storage.js';
 import { attachDrawing } from '../components/drawing.js';
-
-const MARK_CYCLE = ['none', 'maru', 'sankaku', 'batsu'];
-const MARK_ICON = { none: '−', maru: '◯', sankaku: '△', batsu: '✕' };
-const MARK_LABEL = { none: 'マークなし', maru: '有力', sankaku: '保留', batsu: '除外' };
+import { MARK_CYCLE, MARK_ICON, MARK_LABEL, escapeHtml } from '../utils.js';
 
 export function renderQuiz(root, params) {
   const mode = params.get('mode') || 'all';
@@ -447,12 +444,4 @@ export function renderQuiz(root, params) {
     if (advanceTimer) clearTimeout(advanceTimer);
     drawingApi?.destroy();
   };
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }

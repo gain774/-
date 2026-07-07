@@ -24,6 +24,15 @@
 
 ビルド不要・依存パッケージなしの静的サイトです。
 
+**一番簡単な方法(サーバー不要)**: `dist/kakomon-plus.html` をブラウザで開くだけ(ダブルクリックでOK)。
+アプリ全体を1ファイルにまとめた単一ファイル版です。再生成は:
+
+```bash
+node scripts/build-single.mjs   # → dist/kakomon-plus.html
+```
+
+開発時はモジュール版をローカルサーバーで:
+
 ```bash
 # リポジトリ直下で
 python3 -m http.server 8000

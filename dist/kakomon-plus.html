@@ -1,0 +1,2857 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>カコモン+ | 過去問演習をもっと快適に</title>
+<style>
+/* ============================================================
+   カコモン+ デザイントークン
+   落ち着いたニュートラルグレー基調 + 低彩度スレートブルー。
+   チャート色は dataviz validate_palette.js で light/dark 両方 PASS 済み。
+   ============================================================ */
+:root {
+  --bg: #f5f5f4;
+  --card: #ffffff;
+  --card-sub: #f7f7f6;
+  --ink: #23262b;
+  --ink-2: #555a63;
+  --muted: #8a8e96;
+  --line: #e6e6e4;
+  --line-strong: #cccbc8;
+  --accent: #3b628f;          /* ボタン等の塗り(白文字 6.2:1) */
+  --accent-strong: #2f5075;
+  --accent-text: #3b628f;     /* リンク・アクティブ文字 */
+  --accent-soft: #edf1f6;
+  --ok: #3a7d44;
+  --ok-soft: #eef4ef;
+  --ng: #b04a4a;
+  --ng-soft: #f7eeee;
+  --warn: #96762a;
+  --warn-soft: #f7f2e3;
+  --premium: #6b5ca8;
+  --premium-soft: #f0eef7;
+  --chart-series: #33689e;
+  --chart-grid: #e6e6e4;
+  --chart-baseline: #c6c5c0;
+  --shadow: 0 1px 2px rgba(30, 32, 38, .05), 0 3px 12px rgba(30, 32, 38, .05);
+  --radius: 12px;
+  --radius-sm: 8px;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --bg: #17181a;
+  --card: #212226;
+  --card-sub: #26272c;
+  --ink: #e8e9eb;
+  --ink-2: #b2b5bc;
+  --muted: #82868f;
+  --line: #32343a;
+  --line-strong: #4a4d55;
+  --accent: #3b628f;
+  --accent-strong: #47739f;
+  --accent-text: #8fb3d9;
+  --accent-soft: #262e38;
+  --ok: #6aa873;
+  --ok-soft: #232b24;
+  --ng: #c97a7a;
+  --ng-soft: #322426;
+  --warn: #c2a04e;
+  --warn-soft: #322c1e;
+  --premium: #a396d6;
+  --premium-soft: #2c2940;
+  --chart-series: #4f87c4;
+  --chart-grid: #2e2f34;
+  --chart-baseline: #3d3f45;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 3px 12px rgba(0, 0, 0, .22);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.65;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   レイアウト共通:コンテナ幅は画面サイズで段階的に拡大
+   ============================================================ */
+.header-inner,
+.app-main,
+.action-bar-inner {
+  width: 100%;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 900px) {
+  .header-inner,
+  .app-main,
+  .action-bar-inner { max-width: 1000px; }
+}
+
+/* ============================================================
+   ヘッダー / ナビ
+   ============================================================ */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.brand-mark {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 7px;
+  font-size: 14px;
+}
+.brand-plus { color: var(--accent-text); }
+.app-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+.app-nav a {
+  text-decoration: none;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.app-nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.app-nav a:hover { color: var(--accent-text); }
+.header-actions { display: flex; gap: 6px; }
+.icon-btn {
+  height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-2);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.icon-btn svg { width: 15px; height: 15px; }
+.icon-btn:hover { border-color: var(--accent-text); color: var(--accent-text); }
+
+/* ============================================================
+   メイン / フッター
+   ============================================================ */
+.app-main {
+  flex: 1;
+  padding: 20px 16px 96px;
+  outline: none;
+}
+.app-footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+.app-footer p { margin: 0 0 4px; }
+.app-footer a { color: var(--accent-text); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card h2 { margin: 0 0 4px; font-size: 18px; }
+.card .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin: 24px 0 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .06s ease, background .12s ease;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-ghost { background: transparent; }
+.btn-lg { font-size: 15.5px; padding: 13px 22px; width: 100%; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--card-sub);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+.badge-premium {
+  background: var(--premium-soft);
+  color: var(--premium);
+  border-color: transparent;
+}
+.badge-free {
+  background: var(--ok-soft);
+  color: var(--ok);
+  border-color: transparent;
+}
+
+/* ============================================================
+   ホーム
+   ============================================================ */
+.hero {
+  padding: 24px 22px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.hero h1 { margin: 0 0 6px; font-size: 21px; line-height: 1.4; }
+.hero p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+
+/* 解答方式の切替 */
+.answer-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+.answer-mode-row .am-label { font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
+.answer-mode-row .seg { flex: 1; min-width: 220px; max-width: 340px; }
+.answer-mode-row .am-desc { flex-basis: 100%; font-size: 12px; color: var(--muted); margin: 0; }
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .menu-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.menu-card {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  transition: border-color .12s ease, transform .06s ease;
+}
+.menu-card:hover { border-color: var(--accent-text); }
+.menu-card:active { transform: scale(.985); }
+.menu-card .mt { font-weight: 700; font-size: 15px; margin: 0 0 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.menu-card .md { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+.cat-list { display: flex; flex-direction: column; gap: 8px; }
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  text-decoration: none;
+  color: var(--ink);
+}
+.cat-row:hover { border-color: var(--accent-text); }
+.cat-row .cn { font-weight: 600; font-size: 14.5px; flex: 1; }
+.cat-row .cs { font-size: 12px; color: var(--muted); }
+.cat-row .arrow { color: var(--muted); }
+
+.resume-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.resume-banner .rb-text { flex: 1; min-width: 200px; }
+.resume-banner strong { color: var(--accent-text); }
+
+/* ============================================================
+   演習画面
+   ============================================================ */
+.quiz-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.quiz-top .qt-count { font-weight: 700; color: var(--ink); white-space: nowrap; }
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+.quiz-score { white-space: nowrap; }
+.quiz-score .ok { color: var(--ok); font-weight: 700; }
+.quiz-score .ng { color: var(--ng); font-weight: 700; }
+
+/* PC・タブレット横:問題カードと選択肢を2カラムに */
+@media (min-width: 900px) {
+  .quiz-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .quiz-columns .quiz-left {
+    position: sticky;
+    top: 76px;
+  }
+}
+
+.q-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 18px 20px;
+  margin-bottom: 14px;
+}
+.q-meta { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.q-text { font-size: 16px; font-weight: 600; margin: 0; white-space: pre-wrap; }
+
+/* 描画キャンバス */
+.draw-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: var(--radius);
+  touch-action: none;
+  display: none;
+}
+.q-card.drawing .draw-layer { display: block; cursor: crosshair; }
+.q-card.drawing { outline: 2px dashed var(--accent-text); outline-offset: 2px; }
+
+.draw-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.draw-toolbar .tool-btn {
+  min-width: 40px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.draw-toolbar .tool-btn.active {
+  border-color: var(--accent-text);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+.draw-toolbar .tool-label { font-size: 12px; color: var(--muted); margin-right: 2px; }
+
+/* 選択肢 */
+.choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.choice {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  overflow: hidden;
+  transition: border-color .12s ease, opacity .15s ease;
+}
+.choice-mark-btn {
+  flex-shrink: 0;
+  width: 46px;
+  border: none;
+  border-right: 1px solid var(--line);
+  background: var(--card-sub);
+  color: var(--muted);
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.choice-mark-btn:hover { color: var(--accent-text); }
+.choice-body {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: left;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.choice-key {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 0 6px;
+  line-height: 1.5;
+}
+.choice:hover:not(.locked) { border-color: var(--accent-text); }
+
+/* ◯△✕ マーク状態 */
+.choice[data-mark="maru"] { border-color: var(--ok); }
+.choice[data-mark="maru"] .choice-mark-btn { color: var(--ok); background: var(--ok-soft); }
+.choice[data-mark="sankaku"] { border-color: var(--warn); }
+.choice[data-mark="sankaku"] .choice-mark-btn { color: var(--warn); background: var(--warn-soft); }
+.choice[data-mark="batsu"] { opacity: .5; }
+.choice[data-mark="batsu"] .choice-mark-btn { color: var(--ng); background: var(--ng-soft); }
+.choice[data-mark="batsu"] .choice-text { text-decoration: line-through; }
+
+/* 模試・まとめて採点での選択中表示 */
+.choice.is-selected { border-color: var(--accent-text); background: var(--accent-soft); }
+.choice.is-selected .result-icon { color: var(--accent-text); }
+
+/* 解答後 */
+.choice.is-correct { border-color: var(--ok); background: var(--ok-soft); opacity: 1; }
+.choice.is-correct .choice-text { text-decoration: none; }
+.choice.is-wrong-pick { border-color: var(--ng); background: var(--ng-soft); }
+.choice.locked .choice-body, .choice.locked .choice-mark-btn { cursor: default; }
+.choice .result-icon { margin-left: auto; font-weight: 700; flex-shrink: 0; font-size: 13px; }
+.choice.is-correct .result-icon { color: var(--ok); }
+.choice.is-wrong-pick .result-icon { color: var(--ng); }
+
+.mark-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+/* 判定バナー + 解説 */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.verdict.ok { background: var(--ok-soft); color: var(--ok); }
+.verdict.ng { background: var(--ng-soft); color: var(--ng); }
+.verdict .auto-note { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+
+.explain-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  font-size: 14.5px;
+}
+.explain-card h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.explain-card p { margin: 0; white-space: pre-wrap; }
+
+/* 広告プレースホルダ:解説の下だけに置き、操作ボタンから離す */
+.ad-slot {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card-sub);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 26px 16px;
+  margin: 20px 0 8px;
+}
+.ad-slot strong { display: block; font-size: 13px; margin-bottom: 2px; }
+
+/* 下部固定アクションバー */
+.action-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.action-bar-inner {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.action-bar .btn-next { flex: 1; position: relative; overflow: hidden; }
+.btn-next .auto-fill {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, .22);
+  transform-origin: left;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+.btn-next.auto-running .auto-fill { animation: autofill linear forwards; }
+@keyframes autofill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.kbd-hint { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+kbd {
+  font-family: inherit;
+  font-size: 11px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  background: var(--card-sub);
+}
+
+/* セッション結果 */
+.result-hero { text-align: center; padding: 28px 20px; }
+.result-hero .rh-num { font-size: 42px; font-weight: 800; line-height: 1.1; }
+.result-hero .rh-num small { font-size: 17px; color: var(--muted); font-weight: 600; }
+.result-hero .rh-label { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+
+/* まとめて採点の答え合わせリスト */
+.grade-list { display: flex; flex-direction: column; gap: 10px; }
+.grade-item {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 14px 16px;
+  font-size: 14px;
+}
+.grade-item.ok { border-left-color: var(--ok); }
+.grade-item.ng { border-left-color: var(--ng); }
+.grade-item .gi-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; }
+.grade-item .gi-no { font-weight: 700; color: var(--ink-2); font-size: 12.5px; white-space: nowrap; }
+.grade-item .gi-verdict { font-weight: 700; font-size: 12.5px; }
+.grade-item.ok .gi-verdict { color: var(--ok); }
+.grade-item.ng .gi-verdict { color: var(--ng); }
+.grade-item .gi-q { font-weight: 600; margin: 0 0 6px; }
+.grade-item .gi-a { font-size: 13px; margin: 0 0 2px; }
+.grade-item .gi-a .you { color: var(--ng); }
+.grade-item .gi-a .ans { color: var(--ok); }
+.grade-item .gi-ex { font-size: 12.5px; color: var(--ink-2); margin: 6px 0 0; }
+
+/* ============================================================
+   模試
+   ============================================================ */
+.field { margin-bottom: 16px; }
+.field > label, .field > .flabel { display: block; font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+.seg {
+  display: flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.seg button {
+  flex: 1;
+  border: none;
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 6px;
+  cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.active { background: var(--accent); color: #fff; }
+
+.mode-cards { display: flex; flex-direction: column; gap: 10px; }
+@media (min-width: 900px) {
+  .mode-cards { flex-direction: row; }
+  .mode-cards .mode-card { flex: 1; }
+}
+.mode-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  cursor: pointer;
+  background: var(--card);
+}
+.mode-card.active { border-color: var(--accent-text); background: var(--accent-soft); }
+.mode-card input { margin-top: 4px; accent-color: var(--accent); }
+.mode-card .mc-t { font-weight: 700; font-size: 14.5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mode-card .mc-d { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+
+.exam-timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  white-space: nowrap;
+}
+.exam-timer.low { color: var(--ng); border-color: var(--ng); }
+
+.exam-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0;
+}
+.exam-palette button {
+  width: 34px; height: 34px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.exam-palette button.answered { background: var(--accent-soft); border-color: var(--accent-text); color: var(--accent-text); }
+.exam-palette button.current { outline: 2px solid var(--accent-text); outline-offset: 1px; }
+
+/* ============================================================
+   統計
+   ============================================================ */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-tile {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+.stat-tile .st-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.stat-tile .st-value { font-size: 26px; font-weight: 800; line-height: 1.3; }
+.stat-tile .st-value small { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+.viz-root { --surface-1: var(--card); }
+.chart-wrap { overflow-x: auto; }
+.chart-svg { display: block; width: 100%; height: auto; }
+.chart-svg text { font-family: inherit; }
+.chart-bar-hit:hover .chart-bar { filter: brightness(1.12); }
+.chart-empty { color: var(--muted); font-size: 13.5px; text-align: center; padding: 24px 0; }
+
+.table-toggle {
+  background: none;
+  border: none;
+  color: var(--accent-text);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.data-table th, .data-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table th { color: var(--muted); font-size: 12px; }
+
+.review-list { display: flex; flex-direction: column; gap: 8px; }
+.review-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+.review-item .ri-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================
+   設定 / フィードバック
+   ============================================================ */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-row .sr-main { flex: 1; }
+.setting-row .sr-title { font-weight: 600; font-size: 14.5px; }
+.setting-row .sr-desc { font-size: 12.5px; color: var(--muted); }
+.switch {
+  position: relative;
+  width: 46px; height: 27px;
+  flex-shrink: 0;
+}
+.switch input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; position: absolute; z-index: 1; }
+.switch .track {
+  position: absolute; inset: 0;
+  background: var(--line-strong);
+  border-radius: 999px;
+  transition: background .15s ease;
+}
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 21px; height: 21px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .15s ease;
+}
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(19px); }
+
+select.select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+}
+
+textarea.textarea {
+  width: 100%;
+  min-height: 140px;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  resize: vertical;
+}
+textarea.textarea:focus { outline: 2px solid var(--accent-text); outline-offset: 1px; }
+
+.notice {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  background: var(--card-sub);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   レスポンシブ / モーション
+   ============================================================ */
+@media (max-width: 560px) {
+  .menu-grid { grid-template-columns: 1fr; }
+  .stat-tiles { grid-template-columns: 1fr 1fr; }
+  .app-nav a { padding: 6px 9px; font-size: 13px; }
+  .kbd-hint { display: none; }
+  .icon-btn .icon-btn-label { display: none; }
+  .icon-btn { width: 32px; padding: 0; justify-content: center; }
+}
+
+/* スマホ横画面など高さの低い画面:上下の余白を圧縮 */
+@media (max-height: 480px) {
+  .header-inner { padding-top: 6px; padding-bottom: 6px; }
+  .app-main { padding-top: 12px; padding-bottom: 76px; }
+  .hero { padding: 16px 18px; }
+  .q-card { padding: 14px 16px; }
+  .action-bar { padding-top: 6px; }
+  .btn-lg { padding: 10px 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.fade-in { animation: fadeIn .18s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* #app 用:transform を使うと内部の position:fixed(下部バー)の基準が
+   アニメーション中だけずれるため、opacity のみでフェードする */
+.fade-in-app { animation: fadeInApp .18s ease; }
+@keyframes fadeInApp { from { opacity: 0; } to { opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="#/">
+        <span class="brand-mark">カ</span>
+        <span class="brand-name">カコモン<span class="brand-plus">+</span></span>
+      </a>
+      <nav class="app-nav" aria-label="メインナビゲーション">
+        <a href="#/" data-nav="home">ホーム</a>
+        <a href="#/exam" data-nav="exam">模試</a>
+        <a href="#/stats" data-nav="stats">統計</a>
+        <a href="#/settings" data-nav="settings">設定</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="ライト/ダークテーマ切替" title="ライト/ダーク切替">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 3 a9 9 0 0 1 0 18 Z" fill="currentColor" stroke="none"></path>
+          </svg><span class="icon-btn-label">テーマ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="app-main" tabindex="-1"></main>
+
+  <footer class="app-footer">
+    <p>カコモン+ はプロトタイプです。収録している問題はすべてオリジナルのサンプル問題です。</p>
+    <p><a href="#/feedback">フィードバックを送る</a></p>
+  </footer>
+
+<script>
+(function () {
+// ---- js/utils.js ----
+// ============================================================
+// ビュー間で共有する小物:HTMLエスケープ、◯△✕マーク定義
+// ============================================================
+
+const MARK_CYCLE = ['none', 'maru', 'sankaku', 'batsu'];
+const MARK_ICON = { none: '−', maru: '◯', sankaku: '△', batsu: '✕' };
+const MARK_LABEL = { none: 'マークなし', maru: '有力', sankaku: '保留', batsu: '除外' };
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+// ---- js/data/questions.js ----
+// ============================================================
+// 問題データ
+// すべてオリジナルの書き下ろしサンプル問題(ITパスポート試験風)。
+// 実在の過去問は各資格団体の著作権・利用規約を確認してから
+// この形式で取り込む(README の「権利ポリシー」参照)。
+// ============================================================
+
+const EXAM_INFO = {
+  id: 'it-sample',
+  name: 'IT基礎検定(サンプル)',
+  description: 'ITパスポート風のオリジナルサンプル問題',
+  categories: ['ストラテジ系', 'マネジメント系', 'テクノロジ系'],
+};
+
+// answer は choices の 0 始まりインデックス
+const QUESTIONS = [
+  // ---------------- ストラテジ系 ----------------
+  {
+    id: 'st-01', year: 2025, category: 'ストラテジ系',
+    text: '自社の強み・弱みと、外部環境の機会・脅威を組み合わせて経営戦略の方向性を分析する手法はどれか。',
+    choices: ['SWOT分析', 'ABC分析', 'パレート分析', '回帰分析'],
+    answer: 0,
+    explanation: 'SWOT分析は、内部要因である強み(Strengths)・弱み(Weaknesses)と、外部要因である機会(Opportunities)・脅威(Threats)を整理して戦略を検討する手法です。ABC分析は重要度による層別、パレート分析は上位要因の把握、回帰分析は変数間の関係のモデル化に用います。',
+  },
+  {
+    id: 'st-02', year: 2025, category: 'ストラテジ系',
+    text: '製品を「市場成長率」と「市場占有率」の2軸で分類し、経営資源の配分を検討するフレームワークはどれか。',
+    choices: ['バリューチェーン分析', 'PPM(プロダクトポートフォリオマネジメント)', '3C分析', 'ファイブフォース分析'],
+    answer: 1,
+    explanation: 'PPMは市場成長率と市場占有率の2軸で製品・事業を「花形」「金のなる木」「問題児」「負け犬」に分類し、投資配分を考える手法です。',
+  },
+  {
+    id: 'st-03', year: 2024, category: 'ストラテジ系',
+    text: '売上高が1,000万円、変動費が600万円、固定費が300万円のとき、損益分岐点売上高は何万円か。',
+    choices: ['600万円', '750万円', '900万円', '1,000万円'],
+    answer: 1,
+    explanation: '変動費率は 600÷1,000=0.6。限界利益率は 1−0.6=0.4。損益分岐点売上高 = 固定費 ÷ 限界利益率 = 300 ÷ 0.4 = 750万円です。',
+  },
+  {
+    id: 'st-04', year: 2024, category: 'ストラテジ系',
+    text: '他社が保有する優れた事例と自社の業務プロセスを比較し、改善に活かす手法はどれか。',
+    choices: ['アウトソーシング', 'ベンチマーキング', 'コアコンピタンス', 'アライアンス'],
+    answer: 1,
+    explanation: 'ベンチマーキングは、優良企業のベストプラクティスと自社を比較して業務改善につなげる手法です。コアコンピタンスは自社の中核的な強みそのものを指します。',
+  },
+  {
+    id: 'st-05', year: 2024, category: 'ストラテジ系',
+    text: '著作権法によって保護される対象として、最も適切なものはどれか。',
+    choices: ['プログラム言語の仕様', 'アルゴリズム', 'ソースプログラム', '通信プロトコル'],
+    answer: 2,
+    explanation: '著作権法では、プログラムの表現であるソースプログラムは著作物として保護されます。一方、プログラム言語・規約(プロトコル)・解法(アルゴリズム)自体は保護の対象外と明記されています。',
+  },
+  {
+    id: 'st-06', year: 2023, category: 'ストラテジ系',
+    text: '需要と供給の状況に応じて商品やサービスの価格を変動させる価格戦略はどれか。',
+    choices: ['ダイナミックプライシング', 'ペネトレーションプライシング', 'スキミングプライシング', 'キャプティブプライシング'],
+    answer: 0,
+    explanation: 'ダイナミックプライシングは、需給・季節・時間帯などに応じて価格を動的に変える戦略です。ホテルや航空券、イベントチケットなどで広く使われています。',
+  },
+  {
+    id: 'st-07', year: 2023, category: 'ストラテジ系',
+    text: '企業が財務情報・非財務情報を投資家などの利害関係者へ開示する活動を表す用語はどれか。',
+    choices: ['IR', 'CSR', 'M&A', 'TOB'],
+    answer: 0,
+    explanation: 'IR(Investor Relations)は、投資家向けに経営状況や財務情報を開示する活動です。CSRは企業の社会的責任、M&Aは合併・買収、TOBは株式公開買付けを指します。',
+  },
+  {
+    id: 'st-08', year: 2023, category: 'ストラテジ系',
+    text: 'RFID を活用した事例として、最も適切なものはどれか。',
+    choices: [
+      '商品の外装に印刷された二次元コードをスマートフォンで読み取り、商品情報を表示する。',
+      'IC タグを付けた商品をゲートに通すだけで、複数商品を一括で読み取り精算する。',
+      '指紋認証によって入退室を管理する。',
+      'GPS の位置情報を利用して配送車両の現在地を把握する。',
+    ],
+    answer: 1,
+    explanation: 'RFIDは電波でICタグを非接触・一括読取りできる技術です。二次元コードは光学読取り、指紋認証は生体認証、GPSは衛星測位であり、いずれもRFIDの事例ではありません。',
+  },
+  {
+    id: 'st-09', year: 2025, category: 'ストラテジ系',
+    text: '個人情報保護法における「要配慮個人情報」に該当するものはどれか。',
+    choices: ['勤務先の名称', '本人の病歴', 'メールアドレス', '生年月日'],
+    answer: 1,
+    explanation: '要配慮個人情報は、人種、信条、社会的身分、病歴、犯罪歴など、不当な差別や偏見が生じないよう特に配慮を要する情報です。取得には原則として本人の同意が必要です。',
+  },
+  {
+    id: 'st-10', year: 2025, category: 'ストラテジ系',
+    text: '業務プロセスを根本から見直し、抜本的に再設計する経営改革手法はどれか。',
+    choices: ['BPR', 'BPO', 'RPA', 'SFA'],
+    answer: 0,
+    explanation: 'BPR(Business Process Reengineering)は業務プロセスを根本的に再設計する手法です。BPOは業務の外部委託、RPAはソフトウェアロボットによる定型業務の自動化、SFAは営業支援システムです。',
+  },
+
+  // ---------------- マネジメント系 ----------------
+  {
+    id: 'mg-01', year: 2025, category: 'マネジメント系',
+    text: 'プロジェクトの「スコープ」を説明したものとして、最も適切なものはどれか。',
+    choices: [
+      'プロジェクトの実施に必要な費用の見積り',
+      'プロジェクトで実施すべき作業と成果物の範囲',
+      'プロジェクトの完了期限までのスケジュール',
+      'プロジェクトに参加する要員の役割分担',
+    ],
+    answer: 1,
+    explanation: 'スコープは、プロジェクトが生み出す成果物と、そのために必要な作業の範囲を指します。費用はコスト、期限はスケジュール(タイム)、役割分担は資源(人的資源)のマネジメント対象です。',
+  },
+  {
+    id: 'mg-02', year: 2025, category: 'マネジメント系',
+    text: 'システム開発において、利用者が実際の業務で使えるかどうかを確認するために、本番移行前に利用者側が実施するテストはどれか。',
+    choices: ['単体テスト', '結合テスト', 'システムテスト', '受入れテスト'],
+    answer: 3,
+    explanation: '受入れテストは、発注者(利用者)側が要件を満たしているかを確認する最終段階のテストです。単体・結合・システムテストは主に開発者側が実施します。',
+  },
+  {
+    id: 'mg-03', year: 2024, category: 'マネジメント系',
+    text: 'アジャイル開発の説明として、最も適切なものはどれか。',
+    choices: [
+      '要件定義から設計、実装、テストまでを順番に一度だけ実施する。',
+      '短い期間の開発サイクルを繰り返し、動くソフトウェアを少しずつ成長させる。',
+      '開発工程ごとに成果物をすべて文書化してから次工程へ進む。',
+      'プログラムの自動生成ツールを用いて開発を省力化する。',
+    ],
+    answer: 1,
+    explanation: 'アジャイル開発は、イテレーション(スプリント)と呼ばれる短いサイクルで「動くソフトウェア」を繰り返しリリースし、変化に柔軟に対応する開発手法です。選択肢アの一度だけ順に進める方法はウォーターフォールモデルの説明です。',
+  },
+  {
+    id: 'mg-04', year: 2024, category: 'マネジメント系',
+    text: '作業の順序関係と所要日数を図に表し、プロジェクト全体の最短完了日数や余裕のない経路(クリティカルパス)を求める手法はどれか。',
+    choices: ['ガントチャート', 'アローダイアグラム(PERT図)', 'マインドマップ', '特性要因図'],
+    answer: 1,
+    explanation: 'アローダイアグラム(PERT図)は作業の依存関係と日数をネットワーク図で表し、クリティカルパスを特定できます。ガントチャートは進捗の見える化に優れますが、経路計算には向きません。',
+  },
+  {
+    id: 'mg-05', year: 2024, category: 'マネジメント系',
+    text: 'ITサービスマネジメントにおいて、サービスの提供者と利用者の間で、サービスの品質目標(稼働率など)について合意した文書はどれか。',
+    choices: ['SLA', 'NDA', 'RFP', 'SOW'],
+    answer: 0,
+    explanation: 'SLA(Service Level Agreement)は、稼働率や障害復旧時間などのサービスレベルを提供者と利用者が合意する文書です。NDAは秘密保持契約、RFPは提案依頼書です。',
+  },
+  {
+    id: 'mg-06', year: 2023, category: 'マネジメント系',
+    text: 'システム監査人に求められる立場として、最も適切なものはどれか。',
+    choices: [
+      '監査対象の部門に所属し、業務内容を熟知していること',
+      '監査対象から独立し、客観的な立場であること',
+      '監査対象システムの開発責任者であること',
+      '経営者の指示どおりの監査結果を報告すること',
+    ],
+    answer: 1,
+    explanation: 'システム監査人には、監査対象からの独立性と客観性が求められます。監査対象部門に所属していたり、開発当事者であったりすると公正な監査ができません。',
+  },
+  {
+    id: 'mg-07', year: 2023, category: 'マネジメント系',
+    text: '1人が1日8時間で20日かかる作業を、4人で分担した場合に完了までにかかるおおよその日数はどれか。ここで、分担による作業効率の低下はないものとする。',
+    choices: ['4日', '5日', '8日', '10日'],
+    answer: 1,
+    explanation: '総作業量は 8時間 × 20日 = 160時間(20人日)。4人で分担すると 20人日 ÷ 4人 = 5日で完了します。',
+  },
+  {
+    id: 'mg-08', year: 2023, category: 'マネジメント系',
+    text: '障害発生時に備えて、システムを構成する機器を二重化し、通常は片方を待機させておく構成はどれか。',
+    choices: ['デュアルシステム', 'デュプレックスシステム', 'クラスタリング', 'グリッドコンピューティング'],
+    answer: 1,
+    explanation: 'デュプレックスシステムは主系と待機系を用意し、障害時に切り替える構成です。デュアルシステムは2系統で同じ処理を並行実行して結果を照合します。',
+  },
+  {
+    id: 'mg-09', year: 2025, category: 'マネジメント系',
+    text: 'インシデント管理の目的として、最も適切なものはどれか。',
+    choices: [
+      '障害の根本原因を特定して恒久的な対策を行う。',
+      '中断したサービスを可能な限り迅速に復旧させる。',
+      'システム変更の影響を評価して承認する。',
+      'IT資産の構成情報を正確に維持する。',
+    ],
+    answer: 1,
+    explanation: 'インシデント管理の目的は「サービスの迅速な復旧」です。根本原因の追究は問題管理、変更の承認は変更管理、構成情報の維持は構成管理の役割です。',
+  },
+  {
+    id: 'mg-10', year: 2025, category: 'マネジメント系',
+    text: 'WBS(Work Breakdown Structure)を作成する目的として、最も適切なものはどれか。',
+    choices: [
+      'プロジェクトの作業を階層的に分解し、管理可能な単位に整理する。',
+      'プロジェクトの費用対効果を金額で評価する。',
+      '要員ごとの残業時間を集計する。',
+      'システムの画面遷移を設計する。',
+    ],
+    answer: 0,
+    explanation: 'WBSは成果物と作業をトップダウンに分解して階層化し、見積り・分担・進捗管理の基礎とするものです。',
+  },
+
+  // ---------------- テクノロジ系 ----------------
+  {
+    id: 'tc-01', year: 2025, category: 'テクノロジ系',
+    text: '2進数 1011 を10進数で表したものはどれか。',
+    choices: ['9', '11', '13', '15'],
+    answer: 1,
+    explanation: '1011(2進数)= 1×8 + 0×4 + 1×2 + 1×1 = 11 です。',
+  },
+  {
+    id: 'tc-02', year: 2025, category: 'テクノロジ系',
+    text: 'OSS(オープンソースソフトウェア)の説明として、最も適切なものはどれか。',
+    choices: [
+      'ソースコードが公開されており、ライセンスに従えば改変や再配布ができる。',
+      '無料で利用できるが、ソースコードは公開されていない。',
+      '著作権が放棄されており、いかなる制約もなく利用できる。',
+      '個人利用に限り無償で、商用利用はできない。',
+    ],
+    answer: 0,
+    explanation: 'OSSはソースコードが公開され、ライセンス条件の下で使用・改変・再配布が認められたソフトウェアです。無料であることや著作権の放棄は要件ではなく、商用利用も一般に可能です。',
+  },
+  {
+    id: 'tc-03', year: 2025, category: 'テクノロジ系',
+    text: '関係データベースにおいて、表の中から条件に合致する行だけを取り出す関係演算はどれか。',
+    choices: ['射影', '選択', '結合', '和'],
+    answer: 1,
+    explanation: '「選択」は条件を満たす行(レコード)を取り出す演算です。「射影」は列を取り出す演算、「結合」は複数の表を共通の列で連結する演算です。',
+  },
+  {
+    id: 'tc-04', year: 2024, category: 'テクノロジ系',
+    text: '公開鍵暗号方式を利用してデータを暗号化して送るとき、送信者が暗号化に使う鍵はどれか。',
+    choices: ['送信者の公開鍵', '送信者の秘密鍵', '受信者の公開鍵', '受信者の秘密鍵'],
+    answer: 2,
+    explanation: '受信者だけが復号できるようにするため、送信者は「受信者の公開鍵」で暗号化します。受信者は自分の秘密鍵で復号します。ディジタル署名では逆に、送信者の秘密鍵で署名を作成します。',
+  },
+  {
+    id: 'tc-05', year: 2024, category: 'テクノロジ系',
+    text: 'DNS の役割として、最も適切なものはどれか。',
+    choices: [
+      'ドメイン名と IP アドレスを対応付ける。',
+      '端末に IP アドレスを自動的に割り当てる。',
+      '電子メールを転送する。',
+      'Web ページを暗号化して送受信する。',
+    ],
+    answer: 0,
+    explanation: 'DNS(Domain Name System)はドメイン名とIPアドレスの対応(名前解決)を行う仕組みです。IPアドレスの自動割当てはDHCP、メール転送はSMTP、Webの暗号化通信はTLS(HTTPS)の役割です。',
+  },
+  {
+    id: 'tc-06', year: 2024, category: 'テクノロジ系',
+    text: 'マルウェアのうち、ファイルを暗号化するなどしてシステムを利用不能にし、復旧と引換えに金銭を要求するものはどれか。',
+    choices: ['ワーム', 'ランサムウェア', 'スパイウェア', 'キーロガー'],
+    answer: 1,
+    explanation: 'ランサムウェアは、データの暗号化や画面ロックで利用を妨げ、身代金(ransom)を要求するマルウェアです。日頃からのオフラインバックアップが有効な対策になります。',
+  },
+  {
+    id: 'tc-07', year: 2024, category: 'テクノロジ系',
+    text: '稼働率 0.9 の装置を2台直列に接続したシステム全体の稼働率はどれか。',
+    choices: ['0.81', '0.90', '0.95', '0.99'],
+    answer: 0,
+    explanation: '直列接続では両方が稼働している必要があるため、稼働率は 0.9 × 0.9 = 0.81 です。並列(どちらか一方でよい)なら 1−(1−0.9)² = 0.99 になります。',
+  },
+  {
+    id: 'tc-08', year: 2023, category: 'テクノロジ系',
+    text: 'CPU のクロック周波数に関する説明として、最も適切なものはどれか。',
+    choices: [
+      '値が大きいほど、1秒間に実行できる処理の回数の目安が多くなる。',
+      '値が大きいほど、主記憶の容量が大きくなる。',
+      '値が大きいほど、消費電力は必ず小さくなる。',
+      '値は補助記憶装置の読出し速度を表す。',
+    ],
+    answer: 0,
+    explanation: 'クロック周波数は CPU の動作タイミングを刻む信号の周波数で、大きいほど単位時間あたりの処理回数の目安が増えます。ただし性能はコア数やアーキテクチャにも依存します。',
+  },
+  {
+    id: 'tc-09', year: 2023, category: 'テクノロジ系',
+    text: '無線LANのセキュリティ対策として、最も適切なものはどれか。',
+    choices: [
+      '暗号化方式として WPA3 を利用する。',
+      'SSID を初期設定のまま利用する。',
+      '暗号化を無効にして通信速度を優先する。',
+      '推測されやすい単純なパスワードを設定する。',
+    ],
+    answer: 0,
+    explanation: 'WPA3 は現行で推奨される無線LANの暗号化方式です。SSIDやパスワードの初期設定のままの利用、暗号化の無効化は盗聴や不正利用のリスクを高めます。',
+  },
+  {
+    id: 'tc-10', year: 2023, category: 'テクノロジ系',
+    text: '機械学習における「教師あり学習」の説明として、最も適切なものはどれか。',
+    choices: [
+      '正解ラベル付きのデータを使ってモデルを学習させる。',
+      'データの構造やグループを正解なしで見つけ出す。',
+      '報酬が最大になるように試行錯誤して行動を学習する。',
+      '人間がすべての判断ルールをプログラムとして記述する。',
+    ],
+    answer: 0,
+    explanation: '教師あり学習は入力と正解(ラベル)の組を使って学習します。正解なしでグループを見つけるのは教師なし学習、報酬による試行錯誤は強化学習です。',
+  },
+  {
+    id: 'tc-11', year: 2025, category: 'テクノロジ系',
+    text: '1件あたり 2M バイトの画像 500 件を保存するために最低限必要な記憶容量はどれか。ここで、1Mバイト=10⁶バイトとする。',
+    choices: ['0.1Gバイト', '1Gバイト', '10Gバイト', '100Gバイト'],
+    answer: 1,
+    explanation: '2Mバイト × 500件 = 1,000Mバイト = 1Gバイト(1Gバイト=10⁹バイト)です。',
+  },
+  {
+    id: 'tc-12', year: 2023, category: 'テクノロジ系',
+    text: '二要素認証の例として、最も適切なものはどれか。',
+    choices: [
+      'パスワードと秘密の質問の答えを入力する。',
+      'パスワードの入力に加えて、スマートフォンに届く確認コードを入力する。',
+      '長いパスワードを2回入力する。',
+      '2種類のパスワードを使い分ける。',
+    ],
+    answer: 1,
+    explanation: '二要素認証は「知識(パスワード)」「所持(スマートフォンなど)」「生体(指紋など)」のうち異なる2要素を組み合わせます。パスワードと秘密の質問はどちらも知識要素なので二要素にはなりません。',
+  },
+];
+
+function getQuestionById(id) {
+  return QUESTIONS.find((q) => q.id === id);
+}
+
+function getQuestionsByCategory(category) {
+  return QUESTIONS.filter((q) => q.category === category);
+}
+
+function shuffle(list) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ---- js/storage.js ----
+// ============================================================
+// localStorage ラッパー:学習履歴・設定・プレミアムフラグ
+// 将来サーバー同期(アカウント/課金)に置き換える際は
+// このモジュールの実装だけを差し替えればよい。
+// ============================================================
+
+const KEY = 'kakomon-plus/v1';
+
+const DEFAULTS = {
+  settings: {
+    theme: 'auto',        // 'auto' | 'light' | 'dark'
+    answerMode: 'each',   // 'each'=一問一答 | 'end'=まとめて採点
+    autoAdvance: false,   // 正解時に自動で次の問題へ
+    autoAdvanceDelay: 3,  // 秒
+  },
+  // { qid, correct(bool), ts(ms), mode('practice'|'exam') } の配列
+  history: [],
+  // プレミアム(模試の弱点強化など)。プロトタイプではデモフラグ。
+  premium: false,
+  // 中断した演習の再開情報
+  resume: null, // { qids: string[], index: number, correct: number, wrong: number, label: string }
+};
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return structuredClone(DEFAULTS);
+    const data = JSON.parse(raw);
+    return {
+      ...structuredClone(DEFAULTS),
+      ...data,
+      settings: { ...DEFAULTS.settings, ...(data.settings || {}) },
+    };
+  } catch {
+    return structuredClone(DEFAULTS);
+  }
+}
+
+let state = load();
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    // ストレージが使えない環境ではメモリ内のみで動作継続
+  }
+}
+
+// ---------------- 設定 ----------------
+function getSettings() {
+  return { ...state.settings };
+}
+
+function updateSettings(patch) {
+  state.settings = { ...state.settings, ...patch };
+  save();
+  return getSettings();
+}
+
+// ---------------- プレミアム ----------------
+function isPremium() {
+  return !!state.premium;
+}
+
+function setPremium(value) {
+  state.premium = !!value;
+  save();
+}
+
+// ---------------- 履歴 ----------------
+function recordAnswer(qid, correct, mode = 'practice') {
+  state.history.push({ qid, correct: !!correct, ts: Date.now(), mode });
+  // 履歴は最新 5000 件まで保持
+  if (state.history.length > 5000) state.history = state.history.slice(-5000);
+  save();
+}
+
+function getHistory() {
+  return [...state.history];
+}
+
+// 分野別の解答数と正答率
+function getCategoryStats(questionIndex) {
+  const stats = new Map(); // category -> { total, correct }
+  for (const h of state.history) {
+    const q = questionIndex.get(h.qid);
+    if (!q) continue;
+    const s = stats.get(q.category) || { total: 0, correct: 0 };
+    s.total += 1;
+    if (h.correct) s.correct += 1;
+    stats.set(q.category, s);
+  }
+  return stats;
+}
+
+// 各問題の「最後に解いた結果」
+function getLatestResults() {
+  const latest = new Map(); // qid -> { correct, ts }
+  for (const h of state.history) {
+    latest.set(h.qid, { correct: h.correct, ts: h.ts });
+  }
+  return latest;
+}
+
+function getSummary() {
+  const total = state.history.length;
+  const correct = state.history.filter((h) => h.correct).length;
+  const days = new Set(state.history.map((h) => new Date(h.ts).toDateString()));
+
+  // 今日から遡った連続学習日数
+  let streak = 0;
+  const d = new Date();
+  while (days.has(d.toDateString())) {
+    streak += 1;
+    d.setDate(d.getDate() - 1);
+  }
+  // 今日まだ解いていなくても昨日までの連続は保つ
+  if (streak === 0 && days.size > 0) {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    while (days.has(y.toDateString())) {
+      streak += 1;
+      y.setDate(y.getDate() - 1);
+    }
+  }
+  return { total, correct, accuracy: total ? correct / total : 0, studyDays: days.size, streak };
+}
+
+// ---------------- 再開 ----------------
+function saveResume(session) {
+  state.resume = session;
+  save();
+}
+
+function getResume() {
+  return state.resume ? { ...state.resume } : null;
+}
+
+function clearResume() {
+  state.resume = null;
+  save();
+}
+
+// ---------------- リセット ----------------
+function resetAll() {
+  state = structuredClone(DEFAULTS);
+  save();
+}
+
+// ---- js/components/drawing.js ----
+// ============================================================
+// ペン / マーカー / 消しゴム の canvas オーバーレイ
+// 問題カードの上に重ねて自由に書き込めるようにする。
+// ============================================================
+
+const TOOLS = {
+  pen: { label: 'ペン', stroke: '#d03b3b', width: 2.5, alpha: 1 },
+  penBlue: { label: '青ペン', stroke: '#2a78d6', width: 2.5, alpha: 1 },
+  marker: { label: 'マーカー', stroke: '#f5d90a', width: 16, alpha: 0.35 },
+  eraser: { label: '消しゴム', stroke: '#000', width: 22, alpha: 1 },
+};
+
+// container(position:relative の要素)に描画レイヤーを取り付ける
+function attachDrawing(container) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'draw-layer';
+  canvas.setAttribute('aria-label', '書き込みレイヤー');
+  container.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  let tool = 'pen';
+  let active = false;   // 描画モードか(オフなら選択肢を普通に操作できる)
+  let drawing = false;
+  let last = null;
+
+  function resize() {
+    const rect = container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    // リサイズで内容が消えるため退避して戻す
+    let snapshot = null;
+    if (canvas.width > 0 && canvas.height > 0) {
+      snapshot = document.createElement('canvas');
+      snapshot.width = canvas.width;
+      snapshot.height = canvas.height;
+      snapshot.getContext('2d').drawImage(canvas, 0, 0);
+    }
+    canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (snapshot) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(snapshot, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  function pos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function stroke(from, to) {
+    const t = TOOLS[tool];
+    ctx.globalAlpha = t.alpha;
+    ctx.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = t.stroke;
+    ctx.lineWidth = t.width;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!active) return;
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    last = pos(e);
+    // 点をタップしただけでも描けるように
+    stroke(last, { x: last.x + 0.01, y: last.y + 0.01 });
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const p = pos(e);
+    stroke(last, p);
+    last = p;
+  });
+
+  const stop = () => { drawing = false; last = null; };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+
+  const observer = new ResizeObserver(resize);
+  observer.observe(container);
+  resize();
+
+  return {
+    setTool(name) { if (TOOLS[name]) tool = name; },
+    getTool() { return tool; },
+    setActive(on) {
+      active = on;
+      container.classList.toggle('drawing', on);
+    },
+    isActive() { return active; },
+    clear() {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    },
+    destroy() {
+      observer.disconnect();
+      canvas.remove();
+    },
+  };
+}
+
+// ---- js/components/chart.js ----
+// ============================================================
+// 依存なし SVG 横棒グラフ(分野別正答率など 0〜100% の単一系列)
+//  - 単一系列なので凡例なし(タイトルが系列名を兼ねる)
+//  - 各バーの右端に値を直接ラベル表示
+//  - 色は CSS カスタムプロパティ経由(light/dark 両対応・検証済み)
+// ============================================================
+
+function renderBarChart(container, rows, { valueSuffix = '%' } = {}) {
+  container.classList.add('viz-root');
+
+  if (!rows.length) {
+    container.innerHTML = '<p class="chart-empty">まだデータがありません。演習するとここに分野別の成績が表示されます。</p>';
+    return;
+  }
+
+  const width = 640;
+  const labelW = 118;
+  const valueW = 52;
+  const barH = 20;
+  const gap = 16;
+  const topPad = 8;
+  const bottomPad = 26;
+  const plotW = width - labelW - valueW;
+  const height = topPad + rows.length * (barH + gap) - gap + bottomPad;
+
+  const x = (v) => labelW + (Math.max(0, Math.min(100, v)) / 100) * plotW;
+
+  const grid = [0, 25, 50, 75, 100].map((v) => `
+    <line x1="${x(v)}" y1="${topPad}" x2="${x(v)}" y2="${height - bottomPad + 6}"
+      stroke="var(--chart-grid)" stroke-width="1" />
+    <text x="${x(v)}" y="${height - 6}" text-anchor="middle"
+      font-size="11" fill="var(--muted)">${v}${valueSuffix}</text>
+  `).join('');
+
+  const bars = rows.map((r, i) => {
+    const y = topPad + i * (barH + gap);
+    const w = Math.max(0, (r.value / 100) * plotW);
+    // データ端(右端)のみ 4px の角丸、ベースライン側は直角
+    const rr = Math.min(4, w);
+    const path = w <= 0 ? '' : `
+      M ${labelW} ${y}
+      h ${w - rr}
+      a ${rr} ${rr} 0 0 1 ${rr} ${rr}
+      v ${barH - rr * 2}
+      a ${rr} ${rr} 0 0 1 ${-rr} ${rr}
+      h ${-(w - rr)}
+      Z`;
+    return `
+      <g class="chart-bar-hit">
+        <title>${escapeXml(r.label)}: ${r.value}${valueSuffix}${r.detail ? `(${escapeXml(r.detail)})` : ''}</title>
+        <rect x="0" y="${y - gap / 2}" width="${width}" height="${barH + gap}" fill="transparent"/>
+        <text x="${labelW - 10}" y="${y + barH / 2}" text-anchor="end" dominant-baseline="central"
+          font-size="12.5" fill="var(--ink-2)">${escapeXml(r.label)}</text>
+        ${path ? `<path class="chart-bar" d="${path}" fill="var(--chart-series)"/>` : ''}
+        <text x="${x(r.value) + 8}" y="${y + barH / 2}" dominant-baseline="central"
+          font-size="12" font-weight="700" fill="var(--ink)">${r.value}${valueSuffix}</text>
+      </g>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="chart-wrap">
+      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img"
+        aria-label="横棒グラフ" style="min-width: 420px">
+        ${grid}
+        <line x1="${labelW}" y1="${topPad}" x2="${labelW}" y2="${height - bottomPad + 6}"
+          stroke="var(--chart-baseline)" stroke-width="1.5" />
+        ${bars}
+      </svg>
+    </div>
+  `;
+}
+
+function escapeXml(s) {
+  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+
+// ---- js/views/home.js ----
+// ============================================================
+// ホーム:解答方式の切替、出題モード・分野の選択、続きから再開
+// ============================================================
+
+
+
+function renderHome(root) {
+  const resume = getResume();
+  const latest = getLatestResults();
+  const summary = getSummary();
+  const settings = getSettings();
+  const wrongCount = QUESTIONS.filter((q) => latest.get(q.id)?.correct === false).length;
+
+  const resumeHtml = resume && resume.index < resume.qids.length ? `
+    <div class="resume-banner">
+      <span class="rb-text">前回の続きから再開できます:<strong>${escapeHtml(resume.label)}</strong>(${resume.index + 1}問目から)</span>
+      <a class="btn btn-primary" href="#/quiz?mode=resume">再開する</a>
+    </div>` : '';
+
+  const catRows = EXAM_INFO.categories.map((c) => {
+    const qs = getQuestionsByCategory(c);
+    const done = qs.filter((q) => latest.has(q.id)).length;
+    return `
+      <a class="cat-row" href="#/quiz?cat=${encodeURIComponent(c)}">
+        <span class="cn">${c}</span>
+        <span class="cs">${done} / ${qs.length} 問学習済み</span>
+        <span class="arrow">→</span>
+      </a>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="hero">
+      <h1>過去問演習を、もっと快適に。</h1>
+      <p>${EXAM_INFO.name} — 択の絞り込み・書き込み・弱点模試に対応した学習アプリ(プロトタイプ)</p>
+    </div>
+
+    ${resumeHtml}
+
+    <div class="answer-mode-row">
+      <span class="am-label">解答方式</span>
+      <div class="seg" role="radiogroup" aria-label="解答方式">
+        <button type="button" data-am="each" class="${settings.answerMode === 'each' ? 'active' : ''}">一問一答</button>
+        <button type="button" data-am="end" class="${settings.answerMode === 'end' ? 'active' : ''}">まとめて採点</button>
+      </div>
+      <p class="am-desc" id="am-desc">${amDesc(settings.answerMode)}</p>
+    </div>
+
+    <div class="menu-grid">
+      <a class="menu-card" href="#/quiz">
+        <div class="mt">全問シャッフル演習 <span class="badge badge-free">無料</span></div>
+        <div class="md">全${QUESTIONS.length}問からランダム出題。テンポよく解き進められます。</div>
+      </a>
+      <a class="menu-card" href="#/quiz?mode=wrong">
+        <div class="mt">間違えた問題を復習 <span class="badge badge-free">無料</span></div>
+        <div class="md">${wrongCount > 0 ? `現在 ${wrongCount} 問が復習対象です。` : 'まだ復習対象はありません。まず演習しましょう。'}</div>
+      </a>
+      <a class="menu-card" href="#/exam">
+        <div class="mt">模試をつくる <span class="badge badge-premium">プレミアム</span></div>
+        <div class="md">統計から弱点分野を重点出題。時間を計って本番形式で。</div>
+      </a>
+      <a class="menu-card" href="#/stats">
+        <div class="mt">学習統計</div>
+        <div class="md">${summary.total > 0 ? `累計 ${summary.total} 問解答・正答率 ${Math.round(summary.accuracy * 100)}%` : '解答すると分野別の成績が見られます。'}</div>
+      </a>
+    </div>
+
+    <h2 class="section-title">分野を選んで演習</h2>
+    <div class="cat-list">${catRows}</div>
+
+    <h2 class="section-title">このアプリについて</h2>
+    <div class="notice">
+      基本無料で使えます。模試の自動作成などの一部機能は将来プレミアム(有料)を予定していますが、
+      <strong>資格団体の規約で過去問の商用利用が認められない資格については、広告・課金なしの無料提供とします</strong>。
+      現在収録している問題は、権利処理不要のオリジナルのサンプル問題です。
+      お気づきの点は<a href="#/feedback">フィードバック</a>からお寄せください。
+    </div>
+  `;
+
+  // 解答方式の切替(設定に即保存され、すべての演習に適用)
+  root.querySelectorAll('[data-am]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      updateSettings({ answerMode: btn.dataset.am });
+      root.querySelectorAll('[data-am]').forEach((b) => b.classList.toggle('active', b === btn));
+      root.querySelector('#am-desc').textContent = amDesc(btn.dataset.am);
+    });
+  });
+}
+
+function amDesc(mode) {
+  return mode === 'end'
+    ? 'まとめて採点:連続で解き進めて、最後に全問の答え合わせと解説を表示します。'
+    : '一問一答:1問解答するごとに正誤と解説をすぐ表示します。';
+}
+
+// ---- js/views/quiz.js ----
+// ============================================================
+// 演習画面:カコモン+ のコア体験
+//  - 解答方式は2種類(設定・ホームで切替):
+//      each: 一問一答(解答ごとに即採点・解説)
+//      end : まとめて採点(連続で解き、最後に答え合わせ)
+//  - 選択肢の ◯/△/✕ マークで択を絞り込める
+//  - ペン/マーカーで問題に書き込み
+//  - 広告は解説の下だけ(操作ボタンに隣接させない)
+// ============================================================
+
+
+
+
+function renderQuiz(root, params) {
+  const mode = params.get('mode') || 'all';
+  const cat = params.get('cat') || '';
+  const settings = getSettings();
+
+  // ---------------- 出題リストの構築 ----------------
+  let qids;
+  let label;
+  let answerMode = settings.answerMode; // 'each' | 'end'
+
+  if (mode === 'resume') {
+    const r = getResume();
+    if (!r) { location.hash = '#/'; return; }
+    qids = r.qids;
+    label = r.label;
+    answerMode = r.answerMode || 'each';
+  } else if (mode === 'wrong') {
+    const latest = getLatestResults();
+    qids = shuffle(QUESTIONS.filter((q) => latest.get(q.id)?.correct === false).map((q) => q.id));
+    label = '間違えた問題の復習';
+  } else if (cat) {
+    qids = shuffle(QUESTIONS.filter((q) => q.category === cat).map((q) => q.id));
+    label = cat;
+  } else {
+    qids = shuffle(QUESTIONS.map((q) => q.id));
+    label = '全問シャッフル';
+  }
+
+  if (qids.length === 0) {
+    root.innerHTML = `
+      <div class="card" style="text-align:center">
+        <h2>出題できる問題がありません</h2>
+        <p class="sub">このモードに該当する問題がまだありません。</p>
+        <a class="btn btn-primary" href="#/">ホームへ戻る</a>
+      </div>`;
+    return;
+  }
+
+  // ---------------- セッション状態 ----------------
+  const saved = mode === 'resume' ? getResume() : null;
+  const session = {
+    index: saved?.index ?? 0,
+    correct: saved?.correct ?? 0,
+    wrong: saved?.wrong ?? 0,
+    wrongIds: saved?.wrongIds ?? [],
+    answers: saved?.answers ?? new Array(qids.length).fill(null), // end モード用
+  };
+
+  let answered = false;
+  let drawingApi = null;
+  let autoTimer = null;
+  let advanceTimer = null;
+
+  // ---------------- 画面骨格 ----------------
+  root.innerHTML = `
+    <div class="quiz-top">
+      <span class="qt-count"></span>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <span class="quiz-score">${answerMode === 'end'
+        ? '<span class="am-note">まとめて採点</span>'
+        : '<span class="ok"></span> / <span class="ng"></span>'}</span>
+    </div>
+    <div class="draw-toolbar" role="toolbar" aria-label="書き込みツール"></div>
+    <div id="q-area"></div>
+    <div class="action-bar" hidden>
+      <div class="action-bar-inner">
+        <span class="kbd-hint"><kbd>1</kbd>〜<kbd>4</kbd> で解答 / <kbd>Enter</kbd> で次へ</span>
+        <button class="btn btn-primary btn-lg btn-next" type="button">
+          <span class="auto-fill"></span>
+          <span class="btn-next-label">次の問題へ</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  const els = {
+    count: root.querySelector('.qt-count'),
+    fill: root.querySelector('.progress-fill'),
+    ok: root.querySelector('.quiz-score .ok'),
+    ng: root.querySelector('.quiz-score .ng'),
+    toolbar: root.querySelector('.draw-toolbar'),
+    qArea: root.querySelector('#q-area'),
+    actionBar: root.querySelector('.action-bar'),
+    nextBtn: root.querySelector('.btn-next'),
+    nextLabel: root.querySelector('.btn-next-label'),
+  };
+
+  // ---------------- 書き込みツールバー ----------------
+  els.toolbar.innerHTML = `
+    <span class="tool-label">書き込み:</span>
+    <button class="tool-btn" data-draw-toggle type="button" aria-pressed="false">オフ</button>
+    <button class="tool-btn" data-tool="pen" type="button">赤ペン</button>
+    <button class="tool-btn" data-tool="penBlue" type="button">青ペン</button>
+    <button class="tool-btn" data-tool="marker" type="button">蛍光</button>
+    <button class="tool-btn" data-tool="eraser" type="button">消しゴム</button>
+    <button class="tool-btn" data-draw-clear type="button">全消去</button>
+  `;
+  const toggleBtn = els.toolbar.querySelector('[data-draw-toggle]');
+
+  function syncToolbar() {
+    const on = drawingApi?.isActive() ?? false;
+    toggleBtn.classList.toggle('active', on);
+    toggleBtn.setAttribute('aria-pressed', String(on));
+    toggleBtn.textContent = on ? '書き込み中' : 'オフ';
+    els.toolbar.querySelectorAll('[data-tool]').forEach((b) => {
+      b.classList.toggle('active', on && drawingApi?.getTool() === b.dataset.tool);
+    });
+  }
+
+  els.toolbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || !drawingApi) return;
+    if (btn.hasAttribute('data-draw-toggle')) {
+      drawingApi.setActive(!drawingApi.isActive());
+    } else if (btn.hasAttribute('data-draw-clear')) {
+      drawingApi.clear();
+    } else if (btn.dataset.tool) {
+      drawingApi.setActive(true);
+      drawingApi.setTool(btn.dataset.tool);
+    }
+    syncToolbar();
+  });
+
+  // ---------------- 出題 ----------------
+  function currentQuestion() {
+    return getQuestionById(qids[session.index]);
+  }
+
+  function updateTop() {
+    els.count.textContent = `問 ${session.index + 1} / ${qids.length}`;
+    els.fill.style.width = `${(session.index / qids.length) * 100}%`;
+    if (answerMode === 'each') {
+      els.ok.textContent = `◯${session.correct}`;
+      els.ng.textContent = `✕${session.wrong}`;
+    }
+  }
+
+  function showQuestion() {
+    cancelAuto();
+    answered = false;
+    els.actionBar.hidden = true;
+    updateTop();
+
+    const q = currentQuestion();
+    drawingApi?.destroy();
+
+    els.qArea.innerHTML = `
+      <div class="quiz-columns">
+        <div class="quiz-left">
+          <div class="q-card fade-in">
+            <div class="q-meta">
+              <span class="badge">${q.category}</span>
+              <span class="badge">${q.year}年 サンプル</span>
+              <span class="badge">${escapeHtml(label)}</span>
+            </div>
+            <p class="q-text">${escapeHtml(q.text)}</p>
+          </div>
+        </div>
+        <div class="quiz-right">
+          <p class="mark-hint">左の「−」をタップすると ◯(有力)→ △(保留)→ ✕(除外)の順にマークが付きます。✕ は薄く打ち消し表示になり、択を絞れます。</p>
+          <div class="choices"></div>
+          ${answerMode === 'end' ? '<button class="btn btn-ghost" data-skip type="button" style="width:100%">この問題をスキップ</button>' : ''}
+          <div id="after-answer"></div>
+        </div>
+      </div>
+    `;
+
+    const qCard = els.qArea.querySelector('.q-card');
+    drawingApi = attachDrawing(qCard);
+    syncToolbar();
+
+    const choicesEl = els.qArea.querySelector('.choices');
+    q.choices.forEach((text, i) => {
+      const row = document.createElement('div');
+      row.className = 'choice';
+      row.dataset.mark = 'none';
+      row.dataset.index = String(i);
+      row.innerHTML = `
+        <button class="choice-mark-btn" type="button"
+          aria-label="選択肢${i + 1}のマークを切り替え">${MARK_ICON.none}</button>
+        <button class="choice-body" type="button">
+          <span class="choice-key">${i + 1}</span>
+          <span class="choice-text">${escapeHtml(text)}</span>
+          <span class="result-icon"></span>
+        </button>
+      `;
+      row.querySelector('.choice-mark-btn').addEventListener('click', () => cycleMark(row));
+      row.querySelector('.choice-body').addEventListener('click', () => answer(i));
+      choicesEl.appendChild(row);
+    });
+
+    els.qArea.querySelector('[data-skip]')?.addEventListener('click', () => {
+      saveProgress();
+      next();
+    });
+  }
+
+  function cycleMark(row) {
+    if (answered) return;
+    const cur = row.dataset.mark;
+    const nextMark = MARK_CYCLE[(MARK_CYCLE.indexOf(cur) + 1) % MARK_CYCLE.length];
+    row.dataset.mark = nextMark;
+    const btn = row.querySelector('.choice-mark-btn');
+    btn.textContent = MARK_ICON[nextMark];
+    btn.setAttribute('aria-label', `選択肢${Number(row.dataset.index) + 1}: ${MARK_LABEL[nextMark]}`);
+  }
+
+  function saveProgress(indexOffset = 1) {
+    saveResume({
+      qids, index: session.index + indexOffset,
+      correct: session.correct, wrong: session.wrong,
+      wrongIds: session.wrongIds, answers: session.answers,
+      label, answerMode,
+    });
+  }
+
+  // ---------------- 解答 ----------------
+  function answer(picked) {
+    if (answered) return;
+    if (answerMode === 'end') {
+      answerBatch(picked);
+    } else {
+      answerImmediate(picked);
+    }
+  }
+
+  // まとめて採点:選択を記録してすぐ次へ(採点は最後)
+  function answerBatch(picked) {
+    answered = true;
+    session.answers[session.index] = picked;
+    saveProgress();
+
+    const row = els.qArea.querySelector(`.choice[data-index="${picked}"]`);
+    row?.classList.add('is-selected');
+    const icon = row?.querySelector('.result-icon');
+    if (icon) icon.textContent = '選択';
+
+    advanceTimer = setTimeout(next, 250);
+  }
+
+  // 一問一答:即採点 + 解説
+  function answerImmediate(picked) {
+    answered = true;
+
+    const q = currentQuestion();
+    const isCorrect = picked === q.answer;
+    if (isCorrect) session.correct += 1;
+    else { session.wrong += 1; session.wrongIds.push(q.id); }
+
+    recordAnswer(q.id, isCorrect, 'practice');
+    saveProgress();
+
+    // 選択肢をロックして正誤を可視化
+    els.qArea.querySelectorAll('.choice').forEach((row) => {
+      const i = Number(row.dataset.index);
+      row.classList.add('locked');
+      if (i === q.answer) {
+        row.classList.add('is-correct');
+        row.querySelector('.result-icon').textContent = '正解';
+      } else if (i === picked) {
+        row.classList.add('is-wrong-pick');
+        row.querySelector('.result-icon').textContent = 'あなたの解答';
+      }
+    });
+
+    // 判定 + 解説 +(その下に)広告スペース
+    const after = els.qArea.querySelector('#after-answer');
+    const autoOn = settings.autoAdvance;
+    after.innerHTML = `
+      <div class="verdict ${isCorrect ? 'ok' : 'ng'}" role="status">
+        <span>${isCorrect ? '◯ 正解' : '✕ 不正解'}</span>
+        ${autoOn ? `<span class="auto-note">${settings.autoAdvanceDelay}秒後に自動で次へ(タップでキャンセル)</span>` : ''}
+      </div>
+      <div class="explain-card">
+        <h3>解説</h3>
+        <p>${escapeHtml(q.explanation)}</p>
+      </div>
+      <div class="ad-slot" aria-hidden="true">
+        <strong>広告スペース</strong>
+        解説の下だけに表示。選択肢や「次へ」ボタンには隣接させず、誤タップを防ぐ設計です。
+      </div>
+    `;
+
+    els.actionBar.hidden = false;
+    if (session.index + 1 >= qids.length) {
+      els.nextLabel.textContent = '結果を見る';
+    }
+
+    if (autoOn) startAuto(after.querySelector('.verdict'));
+    updateTop();
+  }
+
+  function startAuto(verdictEl) {
+    const sec = Math.max(1, Number(settings.autoAdvanceDelay) || 3);
+    els.nextBtn.classList.add('auto-running');
+    els.nextBtn.querySelector('.auto-fill').style.animationDuration = `${sec}s`;
+    autoTimer = setTimeout(next, sec * 1000);
+    verdictEl?.addEventListener('click', cancelAuto, { once: true });
+  }
+
+  function cancelAuto() {
+    if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+    els.nextBtn.classList.remove('auto-running');
+    const note = els.qArea.querySelector('.auto-note');
+    if (note) note.textContent = '';
+  }
+
+  function next() {
+    cancelAuto();
+    session.index += 1;
+    if (session.index >= qids.length) {
+      finish();
+    } else {
+      showQuestion();
+      window.scrollTo({ top: 0 });
+    }
+  }
+
+  // ---------------- 結果 ----------------
+  function finish() {
+    clearResume();
+    drawingApi?.destroy();
+    drawingApi = null;
+    els.actionBar.hidden = true;
+    els.toolbar.hidden = true;
+    els.fill.style.width = '100%';
+
+    if (answerMode === 'end') {
+      finishBatch();
+      return;
+    }
+
+    const total = qids.length;
+    const rate = Math.round((session.correct / total) * 100);
+    els.qArea.innerHTML = `
+      <div class="card result-hero fade-in">
+        <div class="rh-num">${session.correct}<small> / ${total} 問正解(${rate}%)</small></div>
+        <div class="rh-label">${escapeHtml(label)} おつかれさまでした</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px">
+        ${session.wrongIds.length ? `<a class="btn btn-lg" href="#/quiz?mode=wrong">間違えた問題だけもう一度(${session.wrongIds.length}問)</a>` : ''}
+        <a class="btn btn-lg" href="#/stats">統計を見る</a>
+        <a class="btn btn-primary btn-lg" href="#/">ホームへ戻る</a>
+      </div>
+    `;
+  }
+
+  // まとめて採点:最後に全問の答え合わせ
+  function finishBatch() {
+    let correct = 0;
+    const items = qids.map((qid, i) => {
+      const q = getQuestionById(qid);
+      const picked = session.answers[i];
+      const ok = picked === q.answer;
+      if (picked !== null) recordAnswer(q.id, ok, 'practice');
+      if (ok) correct += 1;
+      else if (picked !== null) session.wrongIds.push(q.id);
+      return { q, picked, ok, no: i + 1 };
+    });
+
+    const answeredCount = session.answers.filter((a) => a !== null).length;
+    const total = qids.length;
+    const rate = Math.round((correct / total) * 100);
+    const wrongCount = items.filter((it) => !it.ok).length;
+
+    els.qArea.innerHTML = `
+      <div class="card result-hero fade-in">
+        <div class="rh-num">${correct}<small> / ${total} 問正解(${rate}%)</small></div>
+        <div class="rh-label">${escapeHtml(label)} の答え合わせ${answeredCount < total ? `(未解答 ${total - answeredCount} 問)` : ''}</div>
+      </div>
+
+      <div class="card">
+        <h2>答え合わせ</h2>
+        <p class="sub">問題ごとの正誤と解説</p>
+        <div class="grade-list">
+          ${items.map(({ q, picked, ok, no }) => `
+            <div class="grade-item ${ok ? 'ok' : 'ng'}">
+              <div class="gi-head">
+                <span class="gi-no">問${no}</span>
+                <span class="gi-verdict">${ok ? '◯ 正解' : (picked === null ? '− 未解答' : '✕ 不正解')}</span>
+                <span class="badge">${q.category}</span>
+              </div>
+              <p class="gi-q">${escapeHtml(q.text)}</p>
+              ${picked !== null && !ok ? `<p class="gi-a"><span class="you">あなた: ${escapeHtml(q.choices[picked])}</span></p>` : ''}
+              <p class="gi-a"><span class="ans">正解: ${escapeHtml(q.choices[q.answer])}</span></p>
+              <p class="gi-ex">${escapeHtml(q.explanation)}</p>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="ad-slot" aria-hidden="true">
+        <strong>広告スペース</strong>
+        答え合わせの確認が終わった位置にのみ表示します。
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px">
+        ${wrongCount ? `<a class="btn btn-lg" href="#/quiz?mode=wrong">間違えた問題だけもう一度</a>` : ''}
+        <a class="btn btn-lg" href="#/stats">統計を見る</a>
+        <a class="btn btn-primary btn-lg" href="#/">ホームへ戻る</a>
+      </div>
+    `;
+  }
+
+  // ---------------- キーボード ----------------
+  function onKey(e) {
+    if (e.target.matches('input, textarea, select')) return;
+    if (e.key >= '1' && e.key <= '4') {
+      const i = Number(e.key) - 1;
+      const q = currentQuestion();
+      if (q && i < q.choices.length && !answered) answer(i);
+    } else if (e.key === 'Enter' && answered && answerMode === 'each') {
+      e.preventDefault();
+      next();
+    } else if (e.key === 'Escape') {
+      cancelAuto();
+    }
+  }
+
+  els.nextBtn.addEventListener('click', next);
+  document.addEventListener('keydown', onKey);
+
+  showQuestion();
+
+  // ビュー破棄時の後始末
+  return () => {
+    document.removeEventListener('keydown', onKey);
+    cancelAuto();
+    if (advanceTimer) clearTimeout(advanceTimer);
+    drawingApi?.destroy();
+  };
+}
+
+// ---- js/views/exam.js ----
+// ============================================================
+// 模試:プレミアム機能のデモ
+//  - 分野バランス型 / 弱点強化型(統計から低正答率の分野を重点出題)
+//  - タイマー付き通し解答 → 採点 → 分野別内訳
+// ============================================================
+
+
+
+
+function renderExam(root) {
+  let timerId = null;
+
+  // ============ 1. 設定画面 ============
+  function showSetup() {
+    stopTimer();
+    const premium = isPremium();
+    root.innerHTML = `
+      <div class="card">
+        <h2>模試をつくる <span class="badge badge-premium">プレミアム</span></h2>
+        <p class="sub">出題方法と問題数・制限時間を選ぶと、その場で模試を自動作成します。</p>
+
+        <div class="field">
+          <span class="flabel">出題方法</span>
+          <div class="mode-cards" role="radiogroup" aria-label="出題方法">
+            <label class="mode-card active" data-mode="balanced">
+              <input type="radio" name="mode" value="balanced" checked>
+              <span>
+                <span class="mc-t">分野バランス型 <span class="badge badge-free">無料</span></span>
+                <span class="mc-d">3分野から均等に出題する標準的な模試です。</span>
+              </span>
+            </label>
+            <label class="mode-card" data-mode="weak">
+              <input type="radio" name="mode" value="weak">
+              <span>
+                <span class="mc-t">弱点強化型 <span class="badge badge-premium">プレミアム</span></span>
+                <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。${premium ? '' : '(プロトタイプでは無料で体験できます)'}</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="flabel">問題数</span>
+          <div class="seg" data-seg="count">
+            <button type="button" data-v="5">5問</button>
+            <button type="button" data-v="10" class="active">10問</button>
+            <button type="button" data-v="20">20問</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="flabel">制限時間</span>
+          <div class="seg" data-seg="time">
+            <button type="button" data-v="5">5分</button>
+            <button type="button" data-v="10" class="active">10分</button>
+            <button type="button" data-v="15">15分</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" id="start-exam" type="button">模試を開始する</button>
+      </div>
+
+      <div class="notice">
+        プレミアムは将来の有料機能の想定です。過去問の利用規約で収益化が認められない資格では、この機能も無料で提供します。
+      </div>
+    `;
+
+    // モードカード
+    root.querySelectorAll('.mode-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        root.querySelectorAll('.mode-card').forEach((c) => c.classList.remove('active'));
+        card.classList.add('active');
+        card.querySelector('input').checked = true;
+      });
+    });
+
+    // セグメント選択
+    root.querySelectorAll('.seg').forEach((seg) => {
+      seg.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        seg.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    root.querySelector('#start-exam').addEventListener('click', () => {
+      const mode = root.querySelector('input[name="mode"]:checked').value;
+      const count = Number(root.querySelector('[data-seg="count"] .active').dataset.v);
+      const minutes = Number(root.querySelector('[data-seg="time"] .active').dataset.v);
+      if (mode === 'weak' && !isPremium()) setPremium(true); // デモ:体験開始でフラグON
+      startExam(buildExam(mode, count), minutes, mode);
+    });
+  }
+
+  // ============ 出題の生成 ============
+  function buildExam(mode, count) {
+    const cats = EXAM_INFO.categories;
+    const questionIndex = new Map(QUESTIONS.map((q) => [q.id, q]));
+
+    // 分野ごとの重み(バランス型は均等、弱点型は誤答率ベース)
+    let weights;
+    if (mode === 'weak') {
+      const stats = getCategoryStats(questionIndex);
+      weights = cats.map((c) => {
+        const s = stats.get(c);
+        if (!s || s.total === 0) return 0.5;              // 未学習分野は中間の重み
+        return Math.max(0.15, 1 - s.correct / s.total);   // 誤答率(最低保証あり)
+      });
+    } else {
+      weights = cats.map(() => 1);
+    }
+    const wSum = weights.reduce((a, b) => a + b, 0);
+
+    // 重みに応じて各分野の出題数を配分
+    const alloc = weights.map((w) => Math.floor((w / wSum) * count));
+    let rest = count - alloc.reduce((a, b) => a + b, 0);
+    for (let i = 0; rest > 0; i = (i + 1) % cats.length) {
+      alloc[i] += 1; rest -= 1;
+    }
+
+    const picked = [];
+    cats.forEach((c, i) => {
+      const pool = shuffle(QUESTIONS.filter((q) => q.category === c));
+      picked.push(...pool.slice(0, alloc[i]));
+    });
+    // 分野内の問題が足りない場合は全体から補充
+    if (picked.length < count) {
+      const used = new Set(picked.map((q) => q.id));
+      picked.push(...shuffle(QUESTIONS.filter((q) => !used.has(q.id))).slice(0, count - picked.length));
+    }
+    return shuffle(picked);
+  }
+
+  // ============ 2. 受験画面 ============
+  function startExam(questions, minutes, mode) {
+    let index = 0;
+    let remaining = minutes * 60;
+    const answers = new Array(questions.length).fill(null);
+    const marks = questions.map(() => ({})); // 問題ごとの {選択肢index: マーク}
+
+    root.innerHTML = `
+      <div class="quiz-top">
+        <span class="qt-count"></span>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+        <span class="exam-timer" role="timer"></span>
+      </div>
+      <div class="exam-palette" aria-label="問題一覧"></div>
+      <div id="exam-q"></div>
+      <div class="action-bar">
+        <div class="action-bar-inner">
+          <button class="btn" id="prev-q" type="button">← 前へ</button>
+          <button class="btn btn-primary btn-lg" id="next-q" type="button" style="flex:1">次へ →</button>
+          <button class="btn" id="submit-exam" type="button">採点する</button>
+        </div>
+      </div>
+    `;
+
+    const els = {
+      count: root.querySelector('.qt-count'),
+      fill: root.querySelector('.progress-fill'),
+      timer: root.querySelector('.exam-timer'),
+      palette: root.querySelector('.exam-palette'),
+      qArea: root.querySelector('#exam-q'),
+    };
+
+    function tick() {
+      remaining -= 1;
+      drawTimer();
+      if (remaining <= 0) {
+        stopTimer();
+        gradeExam(questions, answers, mode, true);
+      }
+    }
+
+    function drawTimer() {
+      const m = Math.floor(Math.max(0, remaining) / 60);
+      const s = Math.max(0, remaining) % 60;
+      els.timer.textContent = `残り ${m}:${String(s).padStart(2, '0')}`;
+      els.timer.classList.toggle('low', remaining <= 60);
+    }
+
+    function drawPalette() {
+      els.palette.innerHTML = questions.map((_, i) => `
+        <button type="button" data-i="${i}"
+          class="${answers[i] !== null ? 'answered' : ''} ${i === index ? 'current' : ''}"
+          aria-label="問${i + 1}${answers[i] !== null ? '(解答済み)' : ''}">${i + 1}</button>
+      `).join('');
+    }
+
+    function showQ() {
+      const q = questions[index];
+      els.count.textContent = `問 ${index + 1} / ${questions.length}`;
+      els.fill.style.width = `${((index + 1) / questions.length) * 100}%`;
+      drawPalette();
+
+      els.qArea.innerHTML = `
+        <div class="quiz-columns">
+        <div class="quiz-left">
+        <div class="q-card">
+          <div class="q-meta">
+            <span class="badge">${q.category}</span>
+            <span class="badge">模試</span>
+          </div>
+          <p class="q-text">${escapeHtml(q.text)}</p>
+        </div>
+        </div>
+        <div class="quiz-right">
+        <div class="choices">
+          ${q.choices.map((text, i) => `
+            <div class="choice ${answers[index] === i ? 'is-selected' : ''}" data-index="${i}" data-mark="${marks[index][i] || 'none'}">
+              <button class="choice-mark-btn" type="button" aria-label="選択肢${i + 1}のマークを切り替え">${MARK_ICON[marks[index][i] || 'none']}</button>
+              <button class="choice-body" type="button">
+                <span class="choice-key">${i + 1}</span>
+                <span class="choice-text">${escapeHtml(text)}</span>
+                <span class="result-icon">${answers[index] === i ? '選択中' : ''}</span>
+              </button>
+            </div>`).join('')}
+        </div>
+        </div>
+        </div>
+      `;
+
+      els.qArea.querySelectorAll('.choice').forEach((row) => {
+        const i = Number(row.dataset.index);
+        row.querySelector('.choice-mark-btn').addEventListener('click', () => {
+          const cur = row.dataset.mark;
+          const next = MARK_CYCLE[(MARK_CYCLE.indexOf(cur) + 1) % MARK_CYCLE.length];
+          row.dataset.mark = next;
+          marks[index][i] = next;
+          row.querySelector('.choice-mark-btn').textContent = MARK_ICON[next];
+        });
+        row.querySelector('.choice-body').addEventListener('click', () => {
+          answers[index] = i;
+          // 解答したら少し間を置いて自動で次の問題へ(模試でもテンポよく)
+          if (index < questions.length - 1) {
+            setTimeout(() => { index += 1; showQ(); }, 220);
+          } else {
+            showQ();
+          }
+        });
+      });
+    }
+
+    els.palette.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-i]');
+      if (!btn) return;
+      index = Number(btn.dataset.i);
+      showQ();
+    });
+    root.querySelector('#prev-q').addEventListener('click', () => {
+      if (index > 0) { index -= 1; showQ(); }
+    });
+    root.querySelector('#next-q').addEventListener('click', () => {
+      if (index < questions.length - 1) { index += 1; showQ(); }
+    });
+    root.querySelector('#submit-exam').addEventListener('click', () => {
+      const unanswered = answers.filter((a) => a === null).length;
+      if (unanswered > 0 && !confirm(`未解答が ${unanswered} 問あります。採点しますか?`)) return;
+      stopTimer();
+      gradeExam(questions, answers, mode, false);
+    });
+
+    drawTimer();
+    timerId = setInterval(tick, 1000);
+    showQ();
+  }
+
+  // ============ 3. 結果画面 ============
+  function gradeExam(questions, answers, mode, timeUp) {
+    stopTimer();
+    let correct = 0;
+    const byCat = new Map();
+    const wrong = [];
+
+    questions.forEach((q, i) => {
+      const ok = answers[i] === q.answer;
+      if (ok) correct += 1;
+      else wrong.push({ q, picked: answers[i] });
+      recordAnswer(q.id, ok, 'exam');
+      const s = byCat.get(q.category) || { total: 0, correct: 0 };
+      s.total += 1;
+      if (ok) s.correct += 1;
+      byCat.set(q.category, s);
+    });
+
+    const rate = Math.round((correct / questions.length) * 100);
+    const rows = [...byCat.entries()].map(([label, s]) => ({
+      label,
+      value: Math.round((s.correct / s.total) * 100),
+      detail: `${s.correct}/${s.total} 問正解`,
+    }));
+
+    root.innerHTML = `
+      <div class="card result-hero">
+        ${timeUp ? '<p class="sub">時間切れのため自動採点しました</p>' : ''}
+        <div class="rh-num">${correct}<small> / ${questions.length} 問正解(${rate}%)</small></div>
+        <div class="rh-label">${mode === 'weak' ? '弱点強化型' : '分野バランス型'}模試の結果</div>
+      </div>
+
+      <div class="card">
+        <h2>分野別の内訳</h2>
+        <p class="sub">今回の模試での正答率</p>
+        <div id="exam-chart"></div>
+      </div>
+
+      ${wrong.length ? `
+      <div class="card">
+        <h2>間違えた問題(${wrong.length}問)</h2>
+        <div class="review-list" style="margin-top:10px">
+          ${wrong.map(({ q, picked }) => `
+            <div class="review-item" style="flex-direction:column; align-items:stretch; white-space:normal">
+              <div style="font-weight:600">${escapeHtml(q.text)}</div>
+              <div style="font-size:12.5px; margin-top:4px">
+                <span style="color:var(--ng)">あなた: ${picked === null ? '未解答' : escapeHtml(q.choices[picked])}</span><br>
+                <span style="color:var(--ok)">正解: ${escapeHtml(q.choices[q.answer])}</span>
+              </div>
+              <div style="font-size:12.5px; color:var(--ink-2); margin-top:4px">${escapeHtml(q.explanation)}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="ad-slot" aria-hidden="true">
+        <strong>広告スペース</strong>
+        結果の確認が終わった位置にのみ表示します。
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <button class="btn btn-lg" id="retry-exam" type="button">もう一度模試をつくる</button>
+        <a class="btn btn-primary btn-lg" href="#/">ホームへ戻る</a>
+      </div>
+    `;
+
+    renderBarChart(root.querySelector('#exam-chart'), rows);
+    root.querySelector('#retry-exam').addEventListener('click', showSetup);
+  }
+
+  function stopTimer() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  showSetup();
+  return () => stopTimer();
+}
+
+// ---- js/views/stats.js ----
+// ============================================================
+// 統計ダッシュボード:スタットタイル + 分野別正答率 + 復習リスト
+// ============================================================
+
+
+
+
+function renderStats(root) {
+  const summary = getSummary();
+  const questionIndex = new Map(QUESTIONS.map((q) => [q.id, q]));
+  const catStats = getCategoryStats(questionIndex);
+  const latest = getLatestResults();
+
+  const rows = EXAM_INFO.categories
+    .map((c) => {
+      const s = catStats.get(c);
+      if (!s || s.total === 0) return null;
+      return {
+        label: c,
+        value: Math.round((s.correct / s.total) * 100),
+        detail: `${s.correct}/${s.total} 問正解`,
+        raw: s,
+      };
+    })
+    .filter(Boolean);
+
+  const wrongQs = QUESTIONS.filter((q) => latest.get(q.id)?.correct === false);
+
+  root.innerHTML = `
+    <div class="stat-tiles">
+      <div class="stat-tile">
+        <div class="st-label">総解答数</div>
+        <div class="st-value">${summary.total}<small> 問</small></div>
+      </div>
+      <div class="stat-tile">
+        <div class="st-label">正答率</div>
+        <div class="st-value">${summary.total ? Math.round(summary.accuracy * 100) : '—'}<small>${summary.total ? ' %' : ''}</small></div>
+      </div>
+      <div class="stat-tile">
+        <div class="st-label">連続学習</div>
+        <div class="st-value">${summary.streak}<small> 日</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>分野別 正答率</h2>
+      <p class="sub">これまでの全解答から集計(演習・模試を含む)</p>
+      <div id="cat-chart"></div>
+      ${rows.length ? '<button class="table-toggle" type="button" aria-expanded="false">表で見る</button><div id="cat-table" hidden></div>' : ''}
+    </div>
+
+    <div class="card">
+      <h2>復習が必要な問題</h2>
+      <p class="sub">最後に解いたとき間違えた問題(${wrongQs.length}件)</p>
+      ${wrongQs.length ? `
+        <div class="review-list">
+          ${wrongQs.slice(0, 10).map((q) => `
+            <div class="review-item">
+              <span class="badge">${q.category}</span>
+              <span class="ri-text">${escapeHtml(q.text)}</span>
+            </div>`).join('')}
+          ${wrongQs.length > 10 ? `<p class="sub" style="margin:6px 0 0">ほか ${wrongQs.length - 10} 件</p>` : ''}
+        </div>
+        <div style="margin-top:14px">
+          <a class="btn btn-primary btn-lg" href="#/quiz?mode=wrong">間違えた問題をまとめて復習する</a>
+        </div>
+      ` : '<p class="sub" style="margin:0">現在、復習対象はありません。</p>'}
+    </div>
+  `;
+
+  renderBarChart(root.querySelector('#cat-chart'), rows);
+
+  // アクセシビリティ用のデータテーブル表示
+  const toggle = root.querySelector('.table-toggle');
+  if (toggle) {
+    const tableWrap = root.querySelector('#cat-table');
+    tableWrap.innerHTML = `
+      <table class="data-table">
+        <thead><tr><th scope="col">分野</th><th scope="col" style="text-align:right">正答率</th><th scope="col" style="text-align:right">正解 / 解答数</th></tr></thead>
+        <tbody>
+          ${rows.map((r) => `<tr><td>${r.label}</td><td class="num">${r.value}%</td><td class="num">${r.raw.correct} / ${r.raw.total}</td></tr>`).join('')}
+        </tbody>
+      </table>`;
+    toggle.addEventListener('click', () => {
+      const open = tableWrap.hidden;
+      tableWrap.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? '表を閉じる' : '表で見る';
+    });
+  }
+}
+
+// ---- js/views/settings.js ----
+// ============================================================
+// 設定:テーマ / 自動で次へ / プレミアム(デモ) / データリセット
+// ============================================================
+
+function renderSettings(root) {
+  const s = getSettings();
+
+  root.innerHTML = `
+    <div class="card">
+      <h2>設定</h2>
+      <p class="sub">設定はこの端末(ブラウザ)に保存されます。</p>
+
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">テーマ</div>
+          <div class="sr-desc">「自動」は端末の設定に合わせます</div>
+        </div>
+        <select class="select" id="theme-select">
+          <option value="auto" ${s.theme === 'auto' ? 'selected' : ''}>自動</option>
+          <option value="light" ${s.theme === 'light' ? 'selected' : ''}>ライト</option>
+          <option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>ダーク</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">解答方式</div>
+          <div class="sr-desc">一問一答=毎回すぐ採点/まとめて採点=最後に答え合わせ</div>
+        </div>
+        <select class="select" id="answer-mode">
+          <option value="each" ${s.answerMode === 'each' ? 'selected' : ''}>一問一答</option>
+          <option value="end" ${s.answerMode === 'end' ? 'selected' : ''}>まとめて採点</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">解答後に自動で次の問題へ</div>
+          <div class="sr-desc">一問一答のとき、解説表示後に自動で進みます</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="auto-advance" ${s.autoAdvance ? 'checked' : ''}>
+          <span class="track"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">自動で進むまでの秒数</div>
+        </div>
+        <select class="select" id="auto-delay">
+          ${[2, 3, 5, 8, 10].map((v) => `<option value="${v}" ${s.autoAdvanceDelay === v ? 'selected' : ''}>${v}秒</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">プレミアム(デモ)<span class="badge badge-premium" style="margin-left:6px">プレミアム</span></div>
+          <div class="sr-desc">弱点強化型模試などの有料予定機能。プロトタイプでは自由に切り替えられます</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="premium-toggle" ${isPremium() ? 'checked' : ''}>
+          <span class="track"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>フィードバック</h2>
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">フィードバックを送る</div>
+          <div class="sr-desc">不具合報告・要望をお寄せください。改善に反映します</div>
+        </div>
+        <a class="btn" href="#/feedback">開く</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>データ</h2>
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">学習データをリセット</div>
+          <div class="sr-desc">解答履歴・統計・設定をすべて削除します(元に戻せません)</div>
+        </div>
+        <button class="btn" id="reset-btn" type="button" style="color:var(--ng); border-color:var(--ng)">リセット</button>
+      </div>
+    </div>
+  `;
+
+  root.querySelector('#theme-select').addEventListener('change', (e) => {
+    updateSettings({ theme: e.target.value });
+    const dark = e.target.value === 'dark' ||
+      (e.target.value === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  });
+  root.querySelector('#answer-mode').addEventListener('change', (e) => {
+    updateSettings({ answerMode: e.target.value });
+  });
+  root.querySelector('#auto-advance').addEventListener('change', (e) => {
+    updateSettings({ autoAdvance: e.target.checked });
+  });
+  root.querySelector('#auto-delay').addEventListener('change', (e) => {
+    updateSettings({ autoAdvanceDelay: Number(e.target.value) });
+  });
+  root.querySelector('#premium-toggle').addEventListener('change', (e) => {
+    setPremium(e.target.checked);
+  });
+  root.querySelector('#reset-btn').addEventListener('click', () => {
+    if (confirm('学習データをすべて削除します。よろしいですか?')) {
+      resetAll();
+      location.hash = '#/';
+    }
+  });
+}
+
+// ---- js/views/feedback.js ----
+// ============================================================
+// フィードバック:不具合報告・要望の送信
+// サーバーが無いプロトタイプのため、メール(mailto)と
+// クリップボードコピーで受け付ける。将来はフォームサービスや
+// issue 連携に置き換える(README 参照)。
+// ============================================================
+
+// 送付先(公開前に運営用アドレスに変更する)
+const FEEDBACK_EMAIL = 'ks07shuhei26@gmail.com';
+
+function renderFeedback(root) {
+  root.innerHTML = `
+    <div class="card">
+      <h2>フィードバックを送る</h2>
+      <p class="sub">不具合の報告や「こうしてほしい」という要望をお寄せください。いただいた内容をもとにアプリを改善していきます。</p>
+
+      <div class="field">
+        <label for="fb-type">種別</label>
+        <select class="select" id="fb-type" style="width:100%">
+          <option value="不具合の報告">不具合の報告</option>
+          <option value="機能の要望">機能の要望</option>
+          <option value="問題の誤りの指摘">問題の誤りの指摘</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fb-body">内容</label>
+        <textarea class="textarea" id="fb-body" placeholder="例)スマホ横画面で選択肢が見切れる/◯△✕のマークを長押しで一気に付けたい など"></textarea>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <button class="btn btn-primary btn-lg" id="fb-mail" type="button">メールで送る</button>
+        <button class="btn btn-lg" id="fb-copy" type="button">内容をコピーする</button>
+      </div>
+      <p class="sub" id="fb-status" role="status" style="margin:10px 0 0"></p>
+    </div>
+
+    <div class="notice">
+      メールアプリが開かない環境では「内容をコピーする」を押して、任意の連絡手段で <strong>${FEEDBACK_EMAIL}</strong> 宛にお送りください。
+    </div>
+  `;
+
+  const typeEl = root.querySelector('#fb-type');
+  const bodyEl = root.querySelector('#fb-body');
+  const statusEl = root.querySelector('#fb-status');
+
+  function buildText() {
+    const env = `画面: ${window.innerWidth}×${window.innerHeight} / UA: ${navigator.userAgent}`;
+    return `【種別】${typeEl.value}\n【内容】\n${bodyEl.value.trim()}\n\n---\n${env}`;
+  }
+
+  root.querySelector('#fb-mail').addEventListener('click', () => {
+    if (!bodyEl.value.trim()) {
+      statusEl.textContent = '内容を入力してください。';
+      bodyEl.focus();
+      return;
+    }
+    const subject = encodeURIComponent(`[カコモン+] ${typeEl.value}`);
+    const body = encodeURIComponent(buildText());
+    location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
+    statusEl.textContent = 'メールアプリを開きました。送信して完了です。';
+  });
+
+  root.querySelector('#fb-copy').addEventListener('click', async () => {
+    if (!bodyEl.value.trim()) {
+      statusEl.textContent = '内容を入力してください。';
+      bodyEl.focus();
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(buildText());
+      statusEl.textContent = 'コピーしました。メール等に貼り付けて送ってください。';
+    } catch {
+      statusEl.textContent = 'コピーできませんでした。本文を選択して手動でコピーしてください。';
+    }
+  });
+}
+
+// ---- js/app.js ----
+// ============================================================
+// カコモン+ エントリポイント:ハッシュルーター + テーマ
+// ============================================================
+
+
+
+
+
+
+
+const routes = {
+  '': renderHome,
+  'quiz': renderQuiz,
+  'exam': renderExam,
+  'stats': renderStats,
+  'settings': renderSettings,
+  'feedback': renderFeedback,
+};
+
+const app = document.getElementById('app');
+let cleanup = null; // 現在のビューの後始末(タイマー・キーリスナー解除)
+
+function parseHash() {
+  const hash = location.hash.replace(/^#\/?/, '');
+  const [path, queryString] = hash.split('?');
+  const params = new URLSearchParams(queryString || '');
+  return { path: path || '', params };
+}
+
+function render() {
+  if (typeof cleanup === 'function') {
+    cleanup();
+    cleanup = null;
+  }
+  const { path, params } = parseHash();
+  const view = routes[path] || renderHome;
+
+  app.innerHTML = '';
+  app.classList.remove('fade-in-app');
+  // reflow でアニメーションを再トリガー
+  void app.offsetWidth;
+  app.classList.add('fade-in-app');
+
+  cleanup = view(app, params) || null;
+
+  // ナビのアクティブ表示
+  const navKey = path === '' ? 'home' : path.split('/')[0];
+  document.querySelectorAll('[data-nav]').forEach((a) => {
+    a.classList.toggle('active', a.dataset.nav === navKey);
+  });
+
+  app.focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+}
+
+// ---------------- テーマ ----------------
+function applyTheme() {
+  const { theme } = getSettings();
+  const dark =
+    theme === 'dark' ||
+    (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  updateSettings({ theme: isDark ? 'light' : 'dark' });
+  applyTheme();
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+applyTheme();
+window.addEventListener('hashchange', render);
+render();
+
+})();
+</script>
+</body>
+</html>

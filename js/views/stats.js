@@ -3,6 +3,7 @@
 // ============================================================
 import { QUESTIONS, EXAM_INFO } from '../data/questions.js';
 import { getSummary, getCategoryStats, getLatestResults, getHistory } from '../storage.js';
+import { escapeHtml } from '../utils.js';
 import { renderBarChart } from '../components/chart.js';
 
 export function renderStats(root) {
@@ -88,8 +89,4 @@ export function renderStats(root) {
       toggle.textContent = open ? '表を閉じる' : '表で見る';
     });
   }
-}
-
-function escapeHtml(s) {
-  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }

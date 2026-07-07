@@ -6,9 +6,7 @@
 import { QUESTIONS, EXAM_INFO, shuffle } from '../data/questions.js';
 import { getCategoryStats, recordAnswer, isPremium, setPremium } from '../storage.js';
 import { renderBarChart } from '../components/chart.js';
-
-const MARK_CYCLE = ['none', 'maru', 'sankaku', 'batsu'];
-const MARK_ICON = { none: '−', maru: '◯', sankaku: '△', batsu: '✕' };
+import { MARK_CYCLE, MARK_ICON, escapeHtml } from '../utils.js';
 
 export function renderExam(root) {
   let timerId = null;
@@ -344,8 +342,4 @@ export function renderExam(root) {
 
   showSetup();
   return () => stopTimer();
-}
-
-function escapeHtml(s) {
-  return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }
