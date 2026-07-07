@@ -8,6 +8,7 @@ import { renderExam } from './views/exam.js';
 import { renderStats } from './views/stats.js';
 import { renderSettings } from './views/settings.js';
 import { renderFeedback } from './views/feedback.js';
+import { renderImport } from './views/import.js';
 
 const routes = {
   '': renderHome,
@@ -16,6 +17,7 @@ const routes = {
   'stats': renderStats,
   'settings': renderSettings,
   'feedback': renderFeedback,
+  'import': renderImport,
 };
 
 const app = document.getElementById('app');

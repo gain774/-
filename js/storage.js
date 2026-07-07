@@ -9,6 +9,7 @@ const KEY = 'kakomon-plus/v1';
 const DEFAULTS = {
   settings: {
     theme: 'auto',        // 'auto' | 'light' | 'dark'
+    examId: 'kenchiku1',  // 選択中の資格
     answerMode: 'each',   // 'each'=一問一答 | 'end'=まとめて採点
     autoAdvance: false,   // 正解時に自動で次の問題へ
     autoAdvanceDelay: 3,  // 秒
@@ -19,6 +20,8 @@ const DEFAULTS = {
   premium: false,
   // 中断した演習の再開情報
   resume: null, // { qids: string[], index: number, correct: number, wrong: number, label: string }
+  // 利用者が取り込んだ資格データ(権利確認済みの過去問など)
+  importedExams: [],
 };
 
 function load() {
@@ -102,10 +105,12 @@ export function getLatestResults() {
   return latest;
 }
 
-export function getSummary() {
-  const total = state.history.length;
-  const correct = state.history.filter((h) => h.correct).length;
-  const days = new Set(state.history.map((h) => new Date(h.ts).toDateString()));
+// validIds を渡すと、その問題群(=特定の資格)に絞って集計する
+export function getSummary(validIds = null) {
+  const hist = validIds ? state.history.filter((h) => validIds.has(h.qid)) : state.history;
+  const total = hist.length;
+  const correct = hist.filter((h) => h.correct).length;
+  const days = new Set(hist.map((h) => new Date(h.ts).toDateString()));
 
   // 今日から遡った連続学習日数
   let streak = 0;
@@ -124,6 +129,24 @@ export function getSummary() {
     }
   }
   return { total, correct, accuracy: total ? correct / total : 0, studyDays: days.size, streak };
+}
+
+// ---------------- 取り込んだ資格データ ----------------
+export function getImportedExams() {
+  return [...(state.importedExams || [])];
+}
+
+export function addImportedExam(exam) {
+  state.importedExams = (state.importedExams || []).filter((e) => e.id !== exam.id);
+  state.importedExams.push(exam);
+  save();
+}
+
+export function removeImportedExam(examId) {
+  state.importedExams = (state.importedExams || []).filter((e) => e.id !== examId);
+  // 削除した資格を選択中だった場合は既定に戻す
+  if (state.settings.examId === examId) state.settings.examId = DEFAULTS.settings.examId;
+  save();
 }
 
 // ---------------- 再開 ----------------

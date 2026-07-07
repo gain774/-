@@ -15,8 +15,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // 連結順 = 依存順(後のファイルは前のファイルの名前を参照できる)
 const JS_ORDER = [
   'js/utils.js',
-  'js/data/questions.js',
   'js/storage.js',
+  'js/data/exams/it-sample.js',
+  'js/data/exams/kenchiku1.js',
+  'js/data/questions.js',
   'js/components/drawing.js',
   'js/components/chart.js',
   'js/views/home.js',
@@ -25,6 +27,7 @@ const JS_ORDER = [
   'js/views/stats.js',
   'js/views/settings.js',
   'js/views/feedback.js',
+  'js/views/import.js',
   'js/app.js',
 ];
 

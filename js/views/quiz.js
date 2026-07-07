@@ -7,7 +7,7 @@
 //  - ペン/マーカーで問題に書き込み
 //  - 広告は解説の下だけ(操作ボタンに隣接させない)
 // ============================================================
-import { QUESTIONS, getQuestionById, shuffle } from '../data/questions.js';
+import { getActiveExam, getQuestionById, shuffle } from '../data/questions.js';
 import {
   getSettings, recordAnswer, saveResume, clearResume, getResume, getLatestResults,
 } from '../storage.js';
@@ -18,6 +18,8 @@ export function renderQuiz(root, params) {
   const mode = params.get('mode') || 'all';
   const cat = params.get('cat') || '';
   const settings = getSettings();
+  const examData = getActiveExam();
+  const QUESTIONS = examData.questions;
 
   // ---------------- 出題リストの構築 ----------------
   let qids;

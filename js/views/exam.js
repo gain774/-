@@ -3,13 +3,15 @@
 //  - 分野バランス型 / 弱点強化型(統計から低正答率の分野を重点出題)
 //  - タイマー付き通し解答 → 採点 → 分野別内訳
 // ============================================================
-import { QUESTIONS, EXAM_INFO, shuffle } from '../data/questions.js';
+import { getActiveExam, shuffle } from '../data/questions.js';
 import { getCategoryStats, recordAnswer, isPremium, setPremium } from '../storage.js';
 import { renderBarChart } from '../components/chart.js';
 import { MARK_CYCLE, MARK_ICON, escapeHtml } from '../utils.js';
 
 export function renderExam(root) {
   let timerId = null;
+  const examData = getActiveExam();
+  const QUESTIONS = examData.questions;
 
   // ============ 1. 設定画面 ============
   function showSetup() {
@@ -96,7 +98,7 @@ export function renderExam(root) {
 
   // ============ 出題の生成 ============
   function buildExam(mode, count) {
-    const cats = EXAM_INFO.categories;
+    const cats = examData.categories;
     const questionIndex = new Map(QUESTIONS.map((q) => [q.id, q]));
 
     // 分野ごとの重み(バランス型は均等、弱点型は誤答率ベース)

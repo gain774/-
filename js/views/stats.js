@@ -1,18 +1,20 @@
 // ============================================================
 // 統計ダッシュボード:スタットタイル + 分野別正答率 + 復習リスト
 // ============================================================
-import { QUESTIONS, EXAM_INFO } from '../data/questions.js';
+import { getActiveExam } from '../data/questions.js';
 import { getSummary, getCategoryStats, getLatestResults, getHistory } from '../storage.js';
 import { escapeHtml } from '../utils.js';
 import { renderBarChart } from '../components/chart.js';
 
 export function renderStats(root) {
-  const summary = getSummary();
+  const examData = getActiveExam();
+  const QUESTIONS = examData.questions;
+  const summary = getSummary(new Set(QUESTIONS.map((q) => q.id)));
   const questionIndex = new Map(QUESTIONS.map((q) => [q.id, q]));
   const catStats = getCategoryStats(questionIndex);
   const latest = getLatestResults();
 
-  const rows = EXAM_INFO.categories
+  const rows = examData.categories
     .map((c) => {
       const s = catStats.get(c);
       if (!s || s.total === 0) return null;
@@ -45,7 +47,7 @@ export function renderStats(root) {
 
     <div class="card">
       <h2>分野別 正答率</h2>
-      <p class="sub">これまでの全解答から集計(演習・模試を含む)</p>
+      <p class="sub">${escapeHtml(examData.name)} — これまでの全解答から集計(演習・模試を含む)</p>
       <div id="cat-chart"></div>
       ${rows.length ? '<button class="table-toggle" type="button" aria-expanded="false">表で見る</button><div id="cat-table" hidden></div>' : ''}
     </div>

@@ -67,6 +67,17 @@ export function renderSettings(root) {
     </div>
 
     <div class="card">
+      <h2>問題データ</h2>
+      <div class="setting-row">
+        <div class="sr-main">
+          <div class="sr-title">問題データの管理</div>
+          <div class="sr-desc">資格データの一覧と、権利確認済みの過去問の取り込み</div>
+        </div>
+        <a class="btn" href="#/import">開く</a>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>フィードバック</h2>
       <div class="setting-row">
         <div class="sr-main">

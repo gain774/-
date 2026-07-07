@@ -1,16 +1,19 @@
 // ============================================================
-// ホーム:解答方式の切替、出題モード・分野の選択、続きから再開
+// ホーム:資格の切替、解答方式の切替、出題モード・分野の選択、再開
 // ============================================================
-import { EXAM_INFO, QUESTIONS, getQuestionsByCategory } from '../data/questions.js';
+import { getAllExams, getActiveExam } from '../data/questions.js';
 import { getResume, getLatestResults, getSummary, getSettings, updateSettings } from '../storage.js';
 import { escapeHtml } from '../utils.js';
 
 export function renderHome(root) {
+  const exam = getActiveExam();
+  const questions = exam.questions;
+  const qidSet = new Set(questions.map((q) => q.id));
   const resume = getResume();
   const latest = getLatestResults();
-  const summary = getSummary();
+  const summary = getSummary(qidSet);
   const settings = getSettings();
-  const wrongCount = QUESTIONS.filter((q) => latest.get(q.id)?.correct === false).length;
+  const wrongCount = questions.filter((q) => latest.get(q.id)?.correct === false).length;
 
   const resumeHtml = resume && resume.index < resume.qids.length ? `
     <div class="resume-banner">
@@ -18,12 +21,12 @@ export function renderHome(root) {
       <a class="btn btn-primary" href="#/quiz?mode=resume">再開する</a>
     </div>` : '';
 
-  const catRows = EXAM_INFO.categories.map((c) => {
-    const qs = getQuestionsByCategory(c);
+  const catRows = exam.categories.map((c) => {
+    const qs = questions.filter((q) => q.category === c);
     const done = qs.filter((q) => latest.has(q.id)).length;
     return `
       <a class="cat-row" href="#/quiz?cat=${encodeURIComponent(c)}">
-        <span class="cn">${c}</span>
+        <span class="cn">${escapeHtml(c)}</span>
         <span class="cs">${done} / ${qs.length} 問学習済み</span>
         <span class="arrow">→</span>
       </a>`;
@@ -32,7 +35,16 @@ export function renderHome(root) {
   root.innerHTML = `
     <div class="hero">
       <h1>過去問演習を、もっと快適に。</h1>
-      <p>${EXAM_INFO.name} — 択の絞り込み・書き込み・弱点模試に対応した学習アプリ(プロトタイプ)</p>
+      <p>択の絞り込み・書き込み・弱点模試に対応した学習アプリ(プロトタイプ)</p>
+    </div>
+
+    <div class="answer-mode-row">
+      <span class="am-label">資格</span>
+      <select class="select" id="exam-select" style="flex:1; min-width:220px">
+        ${getAllExams().map((e) => `<option value="${escapeHtml(e.id)}" ${e.id === exam.id ? 'selected' : ''}>${escapeHtml(e.name)}(${e.questions.length}問)</option>`).join('')}
+      </select>
+      <a class="btn" href="#/import">問題データの管理</a>
+      <p class="am-desc">${escapeHtml(exam.description || '')}</p>
     </div>
 
     ${resumeHtml}
@@ -49,7 +61,7 @@ export function renderHome(root) {
     <div class="menu-grid">
       <a class="menu-card" href="#/quiz">
         <div class="mt">全問シャッフル演習 <span class="badge badge-free">無料</span></div>
-        <div class="md">全${QUESTIONS.length}問からランダム出題。テンポよく解き進められます。</div>
+        <div class="md">全${questions.length}問からランダム出題。テンポよく解き進められます。</div>
       </a>
       <a class="menu-card" href="#/quiz?mode=wrong">
         <div class="mt">間違えた問題を復習 <span class="badge badge-free">無料</span></div>
@@ -72,10 +84,17 @@ export function renderHome(root) {
     <div class="notice">
       基本無料で使えます。模試の自動作成などの一部機能は将来プレミアム(有料)を予定していますが、
       <strong>資格団体の規約で過去問の商用利用が認められない資格については、広告・課金なしの無料提供とします</strong>。
-      現在収録している問題は、権利処理不要のオリジナルのサンプル問題です。
+      収録している問題は、出題形式に合わせて作成した権利処理不要のオリジナル問題です。
+      権利確認済みの実際の過去問は<a href="#/import">問題データの管理</a>から取り込めます。
       お気づきの点は<a href="#/feedback">フィードバック</a>からお寄せください。
     </div>
   `;
+
+  // 資格の切替(履歴・統計は資格ごとに自動で切り替わる)
+  root.querySelector('#exam-select').addEventListener('change', (e) => {
+    updateSettings({ examId: e.target.value });
+    renderHome(root);
+  });
 
   // 解答方式の切替(設定に即保存され、すべての演習に適用)
   root.querySelectorAll('[data-am]').forEach((btn) => {
