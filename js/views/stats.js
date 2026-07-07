@@ -62,7 +62,7 @@ export function renderStats(root) {
           ${wrongQs.length > 10 ? `<p class="sub" style="margin:6px 0 0">ほか ${wrongQs.length - 10} 件</p>` : ''}
         </div>
         <div style="margin-top:14px">
-          <a class="btn btn-primary btn-lg" href="#/quiz?mode=wrong">🔁 間違えた問題をまとめて復習する</a>
+          <a class="btn btn-primary btn-lg" href="#/quiz?mode=wrong">間違えた問題をまとめて復習する</a>
         </div>
       ` : '<p class="sub" style="margin:0">現在、復習対象はありません。</p>'}
     </div>

@@ -9,6 +9,7 @@ const KEY = 'kakomon-plus/v1';
 const DEFAULTS = {
   settings: {
     theme: 'auto',        // 'auto' | 'light' | 'dark'
+    answerMode: 'each',   // 'each'=一問一答 | 'end'=まとめて採点
     autoAdvance: false,   // 正解時に自動で次の問題へ
     autoAdvanceDelay: 3,  // 秒
   },

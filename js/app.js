@@ -7,6 +7,7 @@ import { renderQuiz } from './views/quiz.js';
 import { renderExam } from './views/exam.js';
 import { renderStats } from './views/stats.js';
 import { renderSettings } from './views/settings.js';
+import { renderFeedback } from './views/feedback.js';
 
 const routes = {
   '': renderHome,
@@ -14,6 +15,7 @@ const routes = {
   'exam': renderExam,
   'stats': renderStats,
   'settings': renderSettings,
+  'feedback': renderFeedback,
 };
 
 const app = document.getElementById('app');
@@ -35,10 +37,10 @@ function render() {
   const view = routes[path] || renderHome;
 
   app.innerHTML = '';
-  app.classList.remove('fade-in');
+  app.classList.remove('fade-in-app');
   // reflow でアニメーションを再トリガー
   void app.offsetWidth;
-  app.classList.add('fade-in');
+  app.classList.add('fade-in-app');
 
   cleanup = view(app, params) || null;
 

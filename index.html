@@ -6,7 +6,7 @@
   <meta name="description" content="カコモン+ — 過去問演習をもっと快適に。選択肢の絞り込み、書き込み、弱点模試つきの学習アプリ">
   <title>カコモン+ | 過去問演習をもっと快適に</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233b628f'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='white' font-family='sans-serif'>カ</text></svg>">
 </head>
 <body>
   <header class="app-header">
@@ -19,10 +19,15 @@
         <a href="#/" data-nav="home">ホーム</a>
         <a href="#/exam" data-nav="exam">模試</a>
         <a href="#/stats" data-nav="stats">統計</a>
+        <a href="#/settings" data-nav="settings">設定</a>
       </nav>
       <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn" type="button" aria-label="テーマ切替" title="ライト/ダーク切替">◐</button>
-        <a href="#/settings" class="icon-btn" data-nav="settings" aria-label="設定" title="設定">⚙</a>
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="ライト/ダークテーマ切替" title="ライト/ダーク切替">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 3 a9 9 0 0 1 0 18 Z" fill="currentColor" stroke="none"></path>
+          </svg><span class="icon-btn-label">テーマ</span>
+        </button>
       </div>
     </div>
   </header>
@@ -31,6 +36,7 @@
 
   <footer class="app-footer">
     <p>カコモン+ はプロトタイプです。収録している問題はすべてオリジナルのサンプル問題です。</p>
+    <p><a href="#/feedback">フィードバックを送る</a></p>
   </footer>
 
   <script type="module" src="js/app.js"></script>

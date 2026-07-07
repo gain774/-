@@ -19,7 +19,7 @@ export function renderExam(root) {
     const premium = isPremium();
     root.innerHTML = `
       <div class="card">
-        <h2>模試をつくる <span class="badge badge-premium">✦ プレミアム</span></h2>
+        <h2>模試をつくる <span class="badge badge-premium">プレミアム</span></h2>
         <p class="sub">出題方法と問題数・制限時間を選ぶと、その場で模試を自動作成します。</p>
 
         <div class="field">
@@ -35,7 +35,7 @@ export function renderExam(root) {
             <label class="mode-card" data-mode="weak">
               <input type="radio" name="mode" value="weak">
               <span>
-                <span class="mc-t">弱点強化型 <span class="badge badge-premium">✦ プレミアム</span></span>
+                <span class="mc-t">弱点強化型 <span class="badge badge-premium">プレミアム</span></span>
                 <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。${premium ? '' : '(プロトタイプでは無料で体験できます)'}</span>
               </span>
             </label>
@@ -60,11 +60,11 @@ export function renderExam(root) {
           </div>
         </div>
 
-        <button class="btn btn-primary btn-lg" id="start-exam" type="button">模試を開始する ⏱</button>
+        <button class="btn btn-primary btn-lg" id="start-exam" type="button">模試を開始する</button>
       </div>
 
       <div class="notice">
-        ✦ プレミアムは将来の有料機能の想定です。過去問の利用規約で収益化が認められない資格では、この機能も無料で提供します。
+        プレミアムは将来の有料機能の想定です。過去問の利用規約で収益化が認められない資格では、この機能も無料で提供します。
       </div>
     `;
 
@@ -198,6 +198,8 @@ export function renderExam(root) {
       drawPalette();
 
       els.qArea.innerHTML = `
+        <div class="quiz-columns">
+        <div class="quiz-left">
         <div class="q-card">
           <div class="q-meta">
             <span class="badge">${q.category}</span>
@@ -205,6 +207,8 @@ export function renderExam(root) {
           </div>
           <p class="q-text">${escapeHtml(q.text)}</p>
         </div>
+        </div>
+        <div class="quiz-right">
         <div class="choices">
           ${q.choices.map((text, i) => `
             <div class="choice ${answers[index] === i ? 'is-selected' : ''}" data-index="${i}" data-mark="${marks[index][i] || 'none'}">
@@ -215,6 +219,8 @@ export function renderExam(root) {
                 <span class="result-icon">${answers[index] === i ? '選択中' : ''}</span>
               </button>
             </div>`).join('')}
+        </div>
+        </div>
         </div>
       `;
 
@@ -290,7 +296,7 @@ export function renderExam(root) {
 
     root.innerHTML = `
       <div class="card result-hero">
-        ${timeUp ? '<p class="sub">⏰ 時間切れのため自動採点しました</p>' : ''}
+        ${timeUp ? '<p class="sub">時間切れのため自動採点しました</p>' : ''}
         <div class="rh-num">${correct}<small> / ${questions.length} 問正解(${rate}%)</small></div>
         <div class="rh-label">${mode === 'weak' ? '弱点強化型' : '分野バランス型'}模試の結果</div>
       </div>
@@ -323,7 +329,7 @@ export function renderExam(root) {
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px">
-        <button class="btn btn-lg" id="retry-exam" type="button">⏱ もう一度模試をつくる</button>
+        <button class="btn btn-lg" id="retry-exam" type="button">もう一度模試をつくる</button>
         <a class="btn btn-primary btn-lg" href="#/">ホームへ戻る</a>
       </div>
     `;
