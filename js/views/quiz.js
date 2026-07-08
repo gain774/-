@@ -10,6 +10,7 @@
 import { getActiveExam, getQuestionById, shuffle } from '../data/questions.js';
 import {
   getSettings, recordAnswer, saveResume, clearResume, getResume, getLatestResults,
+  getPracticeConfig,
 } from '../storage.js';
 import { attachDrawing } from '../components/drawing.js';
 import { MARK_CYCLE, MARK_ICON, MARK_LABEL, escapeHtml } from '../utils.js';
@@ -32,6 +33,29 @@ export function renderQuiz(root, params) {
     qids = r.qids;
     label = r.label;
     answerMode = r.answerMode || 'each';
+  } else if (mode === 'custom') {
+    // 演習設定画面(#/practice)で選んだ条件で出題
+    const cfg = getPracticeConfig();
+    if (!cfg) { location.hash = '#/practice'; return; }
+    const years = new Set(cfg.years || []);
+    const cats = new Set(cfg.cats || []);
+    let pool = QUESTIONS.filter((q) =>
+      (years.size === 0 || years.has(q.year))
+      && (!cfg.part || cfg.part === 'all' || (q.part || '') === cfg.part)
+      && (cats.size === 0 || cats.has(q.category)));
+    if (cfg.order === 'year') {
+      pool = [...pool].sort((a, b) => (b.year - a.year) || String(a.id).localeCompare(String(b.id)));
+    } else {
+      pool = shuffle(pool);
+    }
+    if (cfg.count > 0) pool = pool.slice(0, cfg.count);
+    qids = pool.map((q) => q.id);
+    answerMode = cfg.answerMode || answerMode;
+    const yearsLabel = (cfg.years || []).length === new Set(QUESTIONS.map((q) => q.year)).size
+      ? '全年度' : `${[...(cfg.years || [])].sort().join('・')}年度`;
+    label = [yearsLabel,
+      cfg.part && cfg.part !== 'all' ? cfg.part : null,
+      cfg.order === 'year' ? '年度順' : 'ランダム'].filter(Boolean).join('・');
   } else if (mode === 'wrong') {
     const latest = getLatestResults();
     qids = shuffle(QUESTIONS.filter((q) => latest.get(q.id)?.correct === false).map((q) => q.id));
@@ -167,8 +191,8 @@ export function renderQuiz(root, params) {
         <div class="quiz-left">
           <div class="q-card fade-in">
             <div class="q-meta">
-              <span class="badge">${q.category}</span>
-              <span class="badge">${q.year}年 サンプル</span>
+              <span class="badge">${escapeHtml(q.category)}</span>
+              <span class="badge">${q.year}年度${q.part ? '・' + escapeHtml(q.part) : ''}</span>
               <span class="badge">${escapeHtml(label)}</span>
             </div>
             <p class="q-text">${escapeHtml(q.text)}</p>

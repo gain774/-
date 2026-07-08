@@ -16,11 +16,12 @@ const SAMPLE_JSON = `{
     {
       "id": "r6-001",
       "year": 2024,
+      "part": "午前",
       "category": "建築学",
       "text": "問題文をここに入力…",
       "choices": ["選択肢1", "選択肢2", "選択肢3", "選択肢4"],
       "answer": 2,
-      "explanation": "解説をここに入力…(answer は 0 始まりの正解番号)"
+      "explanation": "解説をここに入力…(answer は 0 始まりの正解番号、part は任意)"
     }
   ]
 }`;
@@ -47,10 +48,15 @@ export function renderImport(root) {
               <span class="ri-text">${escapeHtml(e.name)}</span>
               <span class="cs" style="color:var(--muted); font-size:12px">${e.questions.length}問</span>
               ${importedIds.has(e.id) ? `
+                ${e.sourceUrl ? `<button class="btn" data-refresh="${escapeHtml(e.id)}" type="button" title="配信URLから再取得">更新</button>` : ''}
                 <button class="btn" data-export="${escapeHtml(e.id)}" type="button">書き出し</button>
                 <button class="btn" data-del="${escapeHtml(e.id)}" type="button" style="color:var(--ng); border-color:var(--ng)">削除</button>` : ''}
             </div>`).join('')}
         </div>
+        <div style="margin-top:12px">
+          <button class="btn" id="validate-all" type="button">全データを検証(正解番号・重複・解説の有無)</button>
+        </div>
+        <div id="validate-result"></div>
       </div>
 
       <div class="card">
@@ -62,9 +68,10 @@ export function renderImport(root) {
           <input class="select" id="conv-name" type="text" style="width:100%"
             value="1級建築施工管理技士 過去問(自分用)">
         </div>
-        <div class="field" style="display:flex; gap:10px">
-          <label style="flex:1">年度(数字)<input class="select" id="conv-year" type="number" value="2024" style="width:100%"></label>
-          <label style="flex:1">既定の分野<input class="select" id="conv-cat" type="text" value="未分類" style="width:100%"></label>
+        <div class="field" style="display:flex; gap:10px; flex-wrap:wrap">
+          <label style="flex:1; min-width:110px">年度(数字)<input class="select" id="conv-year" type="number" value="2024" style="width:100%"></label>
+          <label style="flex:1; min-width:110px">既定の分野<input class="select" id="conv-cat" type="text" value="未分類" style="width:100%"></label>
+          <label style="flex:1; min-width:110px">既定の区分<input class="select" id="conv-part" type="text" placeholder="午前(任意)" style="width:100%"></label>
         </div>
         <div class="field">
           <textarea class="textarea" id="conv-text" style="min-height:160px; font-size:13px" placeholder="問題ごとに空行で区切って貼り付けます。例:
@@ -84,7 +91,16 @@ export function renderImport(root) {
 
       <div class="card">
         <h2>JSON から取り込む</h2>
-        <p class="sub">下の形式の JSON を貼り付けて取り込みます。データはこの端末のブラウザ内に保存されます。</p>
+        <p class="sub">下の形式の JSON を貼り付けるか、自分のデータ配信URLから取得して取り込みます。データはこの端末のブラウザ内に保存されます。</p>
+
+        <div class="field">
+          <label for="import-url">データ配信URL(任意)</label>
+          <div style="display:flex; gap:8px">
+            <input class="select" id="import-url" type="url" style="flex:1" placeholder="https://gist.githubusercontent.com/…/kakomon.json">
+            <button class="btn" id="fetch-url" type="button">URLから取得</button>
+          </div>
+          <p class="sub" style="margin:6px 0 0">一度PCで変換したJSONを自分の非公開Gist等に置いておくと、他の端末ではURLを入れるだけで取り込めます(貼り付け不要)。</p>
+        </div>
 
         <div class="field">
           <textarea class="textarea" id="import-json" style="min-height:180px; font-family:ui-monospace, monospace; font-size:12.5px" placeholder='${escapeHtml(SAMPLE_JSON)}'></textarea>
@@ -129,6 +145,20 @@ export function renderImport(root) {
       root.querySelector('#import-json').value = SAMPLE_JSON;
     });
 
+    // 全資格データの整合性チェック(問題と答えの正当性の管理)
+    root.querySelector('#validate-all').addEventListener('click', () => {
+      const report = validateAllExams(getAllExams());
+      const box = root.querySelector('#validate-result');
+      box.innerHTML = `
+        <div class="notice" style="margin-top:12px">
+          <strong>検証結果:${report.total}問中、要確認 ${report.issues.length}件</strong><br>
+          ${report.issues.length
+            ? report.issues.slice(0, 30).map((i) => `・${escapeHtml(i)}`).join('<br>')
+              + (report.issues.length > 30 ? `<br>ほか ${report.issues.length - 30} 件` : '')
+            : 'すべての問題に有効な正解番号が設定されており、IDの重複もありません。'}
+        </div>`;
+    });
+
     // 書き出し:JSON を下の入力欄に表示 + 可能ならコピー
     // (別の端末ではその JSON を貼り付けて「取り込む」だけで同じデータが使える)
     root.querySelectorAll('[data-export]').forEach((btn) => {
@@ -157,6 +187,7 @@ export function renderImport(root) {
       const defaults = {
         year: Number(root.querySelector('#conv-year').value) || new Date().getFullYear(),
         category: root.querySelector('#conv-cat').value.trim() || '未分類',
+        part: root.querySelector('#conv-part').value.trim(),
       };
       const { questions, warnings } = parseQuestionsText(text, defaults);
       if (questions.length === 0) {
@@ -180,30 +211,106 @@ export function renderImport(root) {
       root.querySelector('#import-json').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
-    root.querySelector('#do-import').addEventListener('click', () => {
+    function importJson(raw, sourceUrl = '') {
       if (!root.querySelector('#rights-check').checked) {
         statusEl.textContent = '取り込む前に、権利確認のチェックを入れてください。';
-        return;
+        return false;
       }
-      const raw = root.querySelector('#import-json').value.trim();
-      if (!raw) {
+      if (!raw.trim()) {
         statusEl.textContent = 'JSON を貼り付けてください。';
-        return;
+        return false;
       }
       try {
-        const exam = normalizeExam(JSON.parse(raw));
+        const exam = normalizeExam(JSON.parse(raw), { sourceUrl });
         addImportedExam(exam);
         updateSettings({ examId: exam.id });
         draw(); // 一覧を更新(再描画後の要素にメッセージを表示する)
         root.querySelector('#import-status').textContent =
           `「${exam.name}」(${exam.questions.length}問)を取り込み、選択中の資格に設定しました。`;
+        return true;
       } catch (err) {
         statusEl.textContent = `取り込めませんでした: ${err.message}`;
+        return false;
       }
+    }
+
+    root.querySelector('#do-import').addEventListener('click', () => {
+      importJson(root.querySelector('#import-json').value, root.querySelector('#import-url').value.trim());
+    });
+
+    // データ配信URLから取得(チェック済みなら即取り込み)
+    async function fetchFromUrl(url, { autoImport }) {
+      statusEl.textContent = '取得中…';
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        JSON.parse(text); // 形式チェック
+        if (autoImport && root.querySelector('#rights-check').checked) {
+          importJson(text, url);
+        } else {
+          root.querySelector('#import-json').value = text;
+          statusEl.textContent = '取得しました。内容を確認し、権利確認にチェックのうえ「取り込む」を押してください。';
+        }
+        return text;
+      } catch (err) {
+        statusEl.textContent = `取得できませんでした: ${err.message}(URLが公開設定か、JSONとして正しいか確認してください)`;
+        return null;
+      }
+    }
+
+    root.querySelector('#fetch-url').addEventListener('click', () => {
+      const url = root.querySelector('#import-url').value.trim();
+      if (!url) { statusEl.textContent = 'URLを入力してください。'; return; }
+      fetchFromUrl(url, { autoImport: true });
+    });
+
+    // 配信URLからの再取得(更新)
+    root.querySelectorAll('[data-refresh]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const exam = getImportedExams().find((e) => e.id === btn.dataset.refresh);
+        if (!exam?.sourceUrl) return;
+        root.querySelector('#import-url').value = exam.sourceUrl;
+        if (!root.querySelector('#rights-check').checked) root.querySelector('#rights-check').checked = true;
+        await fetchFromUrl(exam.sourceUrl, { autoImport: true });
+      });
     });
   }
 
   draw();
+}
+
+// 全資格データの整合性チェック:
+//  - 正解番号が選択肢の範囲内にあるか
+//  - 問題IDが全資格を通して一意か
+//  - 選択肢の重複、解説の欠落(参考情報)
+export function validateAllExams(exams) {
+  const issues = [];
+  const seenIds = new Map(); // qid -> exam name
+  let total = 0;
+  let noExplanation = 0;
+
+  for (const exam of exams) {
+    for (const q of exam.questions) {
+      total += 1;
+      const where = `[${exam.name}] ${q.id}`;
+      if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer >= q.choices.length) {
+        issues.push(`${where}: 正解番号(${q.answer})が選択肢の範囲外です`);
+      }
+      if (seenIds.has(q.id)) {
+        issues.push(`${where}: 問題ID が「${seenIds.get(q.id)}」と重複しています(成績が混ざる原因になります)`);
+      } else {
+        seenIds.set(q.id, exam.name);
+      }
+      if (new Set(q.choices.map((c) => c.trim())).size !== q.choices.length) {
+        issues.push(`${where}: 同じ内容の選択肢が重複しています`);
+      }
+      if (!q.text.trim()) issues.push(`${where}: 問題文が空です`);
+      if (!q.explanation) noExplanation += 1;
+    }
+  }
+  if (noExplanation > 0) issues.push(`解説が未入力の問題が ${noExplanation} 問あります(動作には支障ありません)`);
+  return { total, issues };
 }
 
 // 貼り付けテキストを問題データに変換する簡易パーサ
@@ -233,15 +340,17 @@ export function parseQuestionsText(text, defaults = {}) {
     let explanation = '';
     let category = defaults.category || '未分類';
     let year = defaults.year || new Date().getFullYear();
+    let part = defaults.part || '';
     let inExplanation = false;
 
     for (const line of lines) {
       const ans = line.match(answerRe);
       if (ans) { answer = toNum(ans[1], ans[2]) - 1; inExplanation = false; continue; }
-      const meta = line.match(/^\s*(解説|分野|年度)\s*[:：]\s*(.*)$/);
+      const meta = line.match(/^\s*(解説|分野|年度|区分)\s*[:：]\s*(.*)$/);
       if (meta) {
         if (meta[1] === '解説') { explanation = meta[2]; inExplanation = true; }
         else if (meta[1] === '分野') { category = meta[2].trim() || category; inExplanation = false; }
+        else if (meta[1] === '区分') { part = meta[2].trim(); inExplanation = false; }
         else { year = Number(meta[2]) || year; inExplanation = false; }
         continue;
       }
@@ -264,6 +373,7 @@ export function parseQuestionsText(text, defaults = {}) {
     // id は取り込み時に資格ID接頭辞付きで採番される(normalizeExam)
     questions.push({
       year, category, text: qText, choices, answer,
+      ...(part ? { part } : {}),
       explanation: explanation.trim(),
     });
   });
@@ -272,7 +382,7 @@ export function parseQuestionsText(text, defaults = {}) {
 }
 
 // 取り込みデータの検証と補完
-function normalizeExam(data) {
+function normalizeExam(data, { sourceUrl = '' } = {}) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('JSON のルートはオブジェクトにしてください。');
   }
@@ -299,6 +409,7 @@ function normalizeExam(data) {
     return {
       id: String(q.id || `${examId}-q${i + 1}`),
       year: Number(q.year) || new Date().getFullYear(),
+      ...(q.part ? { part: String(q.part) } : {}),
       category: String(q.category || 'その他'),
       text: String(q.text),
       choices: q.choices.map(String),
@@ -315,6 +426,7 @@ function normalizeExam(data) {
     id: examId,
     name: String(data.name),
     description: String(data.description || '取り込んだ問題データ'),
+    ...(sourceUrl ? { sourceUrl } : {}),
     categories,
     questions,
   };

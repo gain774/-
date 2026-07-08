@@ -9,10 +9,12 @@ import { renderStats } from './views/stats.js';
 import { renderSettings } from './views/settings.js';
 import { renderFeedback } from './views/feedback.js';
 import { renderImport } from './views/import.js';
+import { renderPractice } from './views/practice.js';
 
 const routes = {
   '': renderHome,
   'quiz': renderQuiz,
+  'practice': renderPractice,
   'exam': renderExam,
   'stats': renderStats,
   'settings': renderSettings,

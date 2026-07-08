@@ -649,6 +649,25 @@ kbd {
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.active { background: var(--accent); color: #fff; }
 
+/* 年度・分野の複数選択チップ */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
 .mode-cards { display: flex; flex-direction: column; gap: 10px; }
 @media (min-width: 900px) {
   .mode-cards { flex-direction: row; }

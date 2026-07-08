@@ -22,6 +22,8 @@ const DEFAULTS = {
   resume: null, // { qids: string[], index: number, correct: number, wrong: number, label: string }
   // 利用者が取り込んだ資格データ(権利確認済みの過去問など)
   importedExams: [],
+  // 演習設定画面(#/practice)の前回の選択内容
+  practice: null, // { years: number[], part: string, cats: string[], order: 'year'|'random', answerMode, count: number|0 }
 };
 
 function load() {
@@ -146,6 +148,16 @@ export function removeImportedExam(examId) {
   state.importedExams = (state.importedExams || []).filter((e) => e.id !== examId);
   // 削除した資格を選択中だった場合は既定に戻す
   if (state.settings.examId === examId) state.settings.examId = DEFAULTS.settings.examId;
+  save();
+}
+
+// ---------------- 演習設定 ----------------
+export function getPracticeConfig() {
+  return state.practice ? { ...state.practice } : null;
+}
+
+export function savePracticeConfig(config) {
+  state.practice = { ...config };
   save();
 }
 

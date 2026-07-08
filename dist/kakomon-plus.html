@@ -656,6 +656,25 @@ kbd {
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.active { background: var(--accent); color: #fff; }
 
+/* 年度・分野の複数選択チップ */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
 .mode-cards { display: flex; flex-direction: column; gap: 10px; }
 @media (min-width: 900px) {
   .mode-cards { flex-direction: row; }
@@ -957,6 +976,8 @@ const DEFAULTS = {
   resume: null, // { qids: string[], index: number, correct: number, wrong: number, label: string }
   // 利用者が取り込んだ資格データ(権利確認済みの過去問など)
   importedExams: [],
+  // 演習設定画面(#/practice)の前回の選択内容
+  practice: null, // { years: number[], part: string, cats: string[], order: 'year'|'random', answerMode, count: number|0 }
 };
 
 function load() {
@@ -1081,6 +1102,16 @@ function removeImportedExam(examId) {
   state.importedExams = (state.importedExams || []).filter((e) => e.id !== examId);
   // 削除した資格を選択中だった場合は既定に戻す
   if (state.settings.examId === examId) state.settings.examId = DEFAULTS.settings.examId;
+  save();
+}
+
+// ---------------- 演習設定 ----------------
+function getPracticeConfig() {
+  return state.practice ? { ...state.practice } : null;
+}
+
+function savePracticeConfig(config) {
+  state.practice = { ...config };
   save();
 }
 
@@ -1425,7 +1456,7 @@ const KENCHIKU1 = {
   questions: [
     // ---------------- 建築学 ----------------
     {
-      id: 'k1-a01', year: 2025, category: '建築学',
+      id: 'k1-a01', year: 2025, category: '建築学', part: '午前',
       text: '冬季暖房時における外壁の室内側表面の結露防止に関する記述として、最も不適当なものはどれか。',
       choices: [
         '室内の水蒸気の発生を抑え、換気を行う。',
@@ -1437,7 +1468,7 @@ const KENCHIKU1 = {
       explanation: '表面結露は、壁などの表面温度がその場の空気の露点温度以下になると発生します。したがって表面温度は露点温度より「高く」保つ必要があり、低く保つという記述は誤りです。断熱強化・換気・水蒸気発生の抑制はいずれも有効な対策です。',
     },
     {
-      id: 'k1-a02', year: 2025, category: '建築学',
+      id: 'k1-a02', year: 2025, category: '建築学', part: '午前',
       text: '北緯35度付近における直達日射に関する記述として、最も不適当なものはどれか。',
       choices: [
         '夏至の日に南向き鉛直面が受ける1日の直達日射量は、冬至の日より小さい。',
@@ -1449,7 +1480,7 @@ const KENCHIKU1 = {
       explanation: '冬至は太陽高度が低いため、南向き鉛直面はほぼ正面から日射を受け、水平面より受熱量が大きくなります。夏至は逆に太陽高度が高く、南向き鉛直面の受熱量は小さくなります(日除け計画の基本)。',
     },
     {
-      id: 'k1-a03', year: 2024, category: '建築学',
+      id: 'k1-a03', year: 2024, category: '建築学', part: '午前',
       text: '室の残響時間に関する記述として、最も適当なものはどれか。',
       choices: [
         '室容積に比例し、室内の総吸音力に反比例する。',
@@ -1461,14 +1492,14 @@ const KENCHIKU1 = {
       explanation: 'セービンの式 T=0.161V/A のとおり、残響時間は室容積 V に比例し、総吸音力 A に反比例します。在室者が増えると吸音力が増すため残響時間は短くなり、音源の大きさは残響時間の定義(60dB減衰時間)に影響しません。',
     },
     {
-      id: 'k1-a04', year: 2024, category: '建築学',
+      id: 'k1-a04', year: 2024, category: '建築学', part: '午前',
       text: 'スパン L の単純梁の全長に等分布荷重 w が作用するとき、最大曲げモーメントとして正しいものはどれか。',
       choices: ['wL²/2', 'wL²/4', 'wL²/8', 'wL²/12'],
       answer: 2,
       explanation: '等分布荷重を受ける単純梁の最大曲げモーメントはスパン中央に生じ、M=wL²/8 です。片持梁の固定端では wL²/2、両端固定梁の端部では wL²/12 となります。',
     },
     {
-      id: 'k1-a05', year: 2023, category: '建築学',
+      id: 'k1-a05', year: 2023, category: '建築学', part: '午前',
       text: '鉄筋コンクリート構造に関する記述として、最も不適当なものはどれか。',
       choices: [
         '柱の帯筋は、主にせん断補強のために設ける。',
@@ -1480,7 +1511,7 @@ const KENCHIKU1 = {
       explanation: '地震時のせん断力は柱の上下端部で大きくなるため、帯筋は端部ほど「密」に配置します。粗くしてよいという記述は逆です。帯筋・あばら筋がせん断補強筋であること、かぶり厚さの役割は正しい記述です。',
     },
     {
-      id: 'k1-a06', year: 2023, category: '建築学',
+      id: 'k1-a06', year: 2023, category: '建築学', part: '午前',
       text: '鉄骨構造の接合に関する記述として、最も不適当なものはどれか。',
       choices: [
         '高力ボルト摩擦接合は、部材間の摩擦力によって応力を伝達する。',
@@ -1492,7 +1523,7 @@ const KENCHIKU1 = {
       explanation: '隅肉溶接は溶接部ののど断面のせん断で力を伝えるもので、引張力を直接伝達する突合せ継手には完全溶込み溶接を用います。普通ボルトは軒高9m超・張り間13m超等の建築物の構造耐力上主要な部分には使用できません(建築基準法施行令)。',
     },
     {
-      id: 'k1-a07', year: 2025, category: '建築学',
+      id: 'k1-a07', year: 2025, category: '建築学', part: '午前',
       text: 'コンクリートの中性化に関する記述として、最も不適当なものはどれか。',
       choices: [
         '中性化は、空気中の二酸化炭素の作用によりコンクリートのアルカリ性が失われていく現象である。',
@@ -1504,7 +1535,7 @@ const KENCHIKU1 = {
       explanation: '中性化してもコンクリート自体の圧縮強度はほとんど低下しません(むしろわずかに増加するとされます)。問題となるのは、アルカリ性の低下により鉄筋の不動態被膜が失われ、腐食・爆裂につながることです。',
     },
     {
-      id: 'k1-a08', year: 2024, category: '建築学',
+      id: 'k1-a08', year: 2024, category: '建築学', part: '午前',
       text: '木材の性質に関する記述として、最も不適当なものはどれか。',
       choices: [
         '繊維飽和点以下では、含水率の低下に伴い強度は増大する。',
@@ -1518,7 +1549,7 @@ const KENCHIKU1 = {
 
     // ---------------- 躯体施工 ----------------
     {
-      id: 'k1-s01', year: 2025, category: '躯体施工',
+      id: 'k1-s01', year: 2025, category: '躯体施工', part: '午前',
       text: '場所打ちコンクリート杭工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         'アースドリル工法では、安定液により孔壁の崩壊を防止する。',
@@ -1530,7 +1561,7 @@ const KENCHIKU1 = {
       explanation: 'スライム(孔底の沈殿物)は、コンクリート打込み「前」に除去しなければなりません。打込み後には除去できず、杭先端支持力の低下につながります。各工法の孔壁保護方式の組合せも頻出です。',
     },
     {
-      id: 'k1-s02', year: 2025, category: '躯体施工',
+      id: 'k1-s02', year: 2025, category: '躯体施工', part: '午前',
       text: '山留め工事における掘削底面の破壊現象に関する記述として、最も不適当なものはどれか。',
       choices: [
         'ヒービングは、軟弱な粘性土地盤で掘削底面が盛り上がる現象である。',
@@ -1542,7 +1573,7 @@ const KENCHIKU1 = {
       explanation: '砂質地盤で地下水とともに砂が噴き上がるのは「ボイリング」です。ヒービングは軟弱粘性土で背面土の重量により掘削底面が回り込んで盛り上がる現象で、地盤条件と現象の対応を整理して覚えます。',
     },
     {
-      id: 'k1-s03', year: 2024, category: '躯体施工',
+      id: 'k1-s03', year: 2024, category: '躯体施工', part: '午前',
       text: '鉄筋のガス圧接に関する記述として、最も不適当なものはどれか。',
       choices: [
         '圧接部のふくらみの直径は、鉄筋径(呼び名)の1.4倍以上とする。',
@@ -1554,7 +1585,7 @@ const KENCHIKU1 = {
       explanation: '軸心のくい違い(偏心)が規定値(鉄筋径の1/5等)を超えた場合は、圧接部を切り取って「再圧接」します。再加熱で修正できるのは、ふくらみの直径や長さが不足する場合です。不良の種類と処置の対応が問われます。',
     },
     {
-      id: 'k1-s04', year: 2024, category: '躯体施工',
+      id: 'k1-s04', year: 2024, category: '躯体施工', part: '午前',
       text: '型枠支保工にパイプサポートを用いる場合の記述として、最も不適当なものはどれか。',
       choices: [
         '高さが3.5mを超える場合は、高さ2m以内ごとに水平つなぎを2方向に設ける。',
@@ -1566,7 +1597,7 @@ const KENCHIKU1 = {
       explanation: '支保工の脚部は、敷板・敷角等の上に載せ、根がらみや釘止め等で滑動・沈下を防止しなければなりません(労働安全衛生規則)。自由に動く状態は倒壊災害の原因になります。1〜3はいずれも規則どおりの記述です。',
     },
     {
-      id: 'k1-s05', year: 2023, category: '躯体施工',
+      id: 'k1-s05', year: 2023, category: '躯体施工', part: '午前',
       text: 'コンクリートの打込みに関する記述として、最も不適当なものはどれか。',
       choices: [
         '外気温が25℃以上の場合、練混ぜから打込み終了までの時間は90分以内とする。',
@@ -1578,7 +1609,7 @@ const KENCHIKU1 = {
       explanation: '練混ぜから打込み終了までの時間の限度は、外気温25℃未満で120分、25℃以上で90分です(JASS 5)。180分は誤りです。コールドジョイント防止の打重ね時間間隔(25℃以上で120分以内等)と混同しないよう注意します。',
     },
     {
-      id: 'k1-s06', year: 2023, category: '躯体施工',
+      id: 'k1-s06', year: 2023, category: '躯体施工', part: '午前',
       text: 'コンクリートの締固めに用いる棒形振動機の使用方法として、最も不適当なものはどれか。',
       choices: [
         '挿入間隔は、60cm以下とする。',
@@ -1590,7 +1621,7 @@ const KENCHIKU1 = {
       explanation: '棒形振動機の先端は、先に打ち込んだ層に10cm程度挿入し、上下層を一体化させるのが正しい使い方です。入らないようにするという記述は誤りで、打重ね部の一体性が失われコールドジョイントの原因になります。',
     },
     {
-      id: 'k1-s07', year: 2025, category: '躯体施工',
+      id: 'k1-s07', year: 2025, category: '躯体施工', part: '午前',
       text: '鉄骨工事における高力ボルト接合に関する記述として、最も不適当なものはどれか。',
       choices: [
         '一群のボルトの締付けは、群の中央部から周辺部に向かう順序で行う。',
@@ -1602,7 +1633,7 @@ const KENCHIKU1 = {
       explanation: '高力ボルトは一度締め付けると塑性変形するため、再使用は認められません。締付け順序(中央→周辺)は、板のなじみを外へ逃がすためで、周辺から締めると中央部に浮きが残ります。',
     },
     {
-      id: 'k1-s08', year: 2024, category: '躯体施工',
+      id: 'k1-s08', year: 2024, category: '躯体施工', part: '午前',
       text: '鉄骨工事の溶接に関する記述として、最も不適当なものはどれか。',
       choices: [
         '気温が-5℃を下回る場合は、溶接を行わない。',
@@ -1614,7 +1645,7 @@ const KENCHIKU1 = {
       explanation: '溶接部の欠陥は、アークエアガウジング等で欠陥部分を完全に「除去してから」再溶接するのが原則です。欠陥の上からの再溶接は欠陥を内部に残すため認められません。低温時の取扱い(-5℃未満は禁止、-5〜5℃は加熱で可)も頻出です。',
     },
     {
-      id: 'k1-s09', year: 2023, category: '躯体施工',
+      id: 'k1-s09', year: 2023, category: '躯体施工', part: '午前',
       text: '既製コンクリート杭のセメントミルク工法に関する記述として、最も不適当なものはどれか。',
       choices: [
         '掘削は、安定液を用いて孔壁の崩壊を防止しながら行う。',
@@ -1626,7 +1657,7 @@ const KENCHIKU1 = {
       explanation: '建込み後に杭を横から押したりこじったりすると、杭体に曲げ応力が生じ損傷や傾斜の原因となるため行ってはいけません。杭心のずれは掘削・建込み段階で管理します。オーガーは掘削・引上げとも正回転が原則です。',
     },
     {
-      id: 'k1-s10', year: 2025, category: '躯体施工',
+      id: 'k1-s10', year: 2025, category: '躯体施工', part: '午前',
       text: 'コンクリートの養生に関する記述として、最も不適当なものはどれか。',
       choices: [
         '普通ポルトランドセメントを用いた場合の湿潤養生期間は、5日以上とする。',
@@ -1640,7 +1671,7 @@ const KENCHIKU1 = {
 
     // ---------------- 仕上施工 ----------------
     {
-      id: 'k1-f01', year: 2025, category: '仕上施工',
+      id: 'k1-f01', year: 2025, category: '仕上施工', part: '午前',
       text: '屋上アスファルト防水工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         'アスファルトルーフィング類の重ね幅は、縦横とも100mm以上とする。',
@@ -1652,7 +1683,7 @@ const KENCHIKU1 = {
       explanation: '上下層の継目が同一箇所に重なると、その部分が弱点となり漏水の原因になります。継目は上下層で重ならないようずらして張ります。水下から水上への張上げは、水の流れに逆らわない重ねを作るためです。',
     },
     {
-      id: 'k1-f02', year: 2025, category: '仕上施工',
+      id: 'k1-f02', year: 2025, category: '仕上施工', part: '午前',
       text: 'シーリング工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         'ワーキングジョイントでは、バックアップ材等を用いて3面接着を避ける。',
@@ -1664,7 +1695,7 @@ const KENCHIKU1 = {
       explanation: 'ムーブメントの大きいワーキングジョイントを3面接着とすると、目地底に拘束されてシーリング材が動きに追従できず破断します。バックアップ材やボンドブレーカーで2面接着とするのが原則です。',
     },
     {
-      id: 'k1-f03', year: 2024, category: '仕上施工',
+      id: 'k1-f03', year: 2024, category: '仕上施工', part: '午前',
       text: '壁タイルの密着張り工法に関する記述として、最も不適当なものはどれか。',
       choices: [
         '振動工具を用いて、タイルを張付けモルタルに密着させる。',
@@ -1676,7 +1707,7 @@ const KENCHIKU1 = {
       explanation: '密着張り(ヴィブラート工法)では、タイルは「上部から下部へ」1段おきに張り、その後間を埋めるように張り進めます。下から張るとモルタルの垂れ等の影響を受けやすくなります。1回の塗付けは2m²以下かつ20分以内が目安です。',
     },
     {
-      id: 'k1-f04', year: 2024, category: '仕上施工',
+      id: 'k1-f04', year: 2024, category: '仕上施工', part: '午前',
       text: 'セメントモルタル塗り工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         '下塗りは、上塗りより富調合のモルタルとする。',
@@ -1688,7 +1719,7 @@ const KENCHIKU1 = {
       explanation: 'モルタル塗りは「下塗りほど富調合(セメント多め)、上塗りほど貧調合」が原則です。上塗りを富調合にすると収縮が大きくなり、ひび割れや剥離の原因になります。下塗り後に2週間程度放置してひび割れを出し切る点は正しい記述です。',
     },
     {
-      id: 'k1-f05', year: 2023, category: '仕上施工',
+      id: 'k1-f05', year: 2023, category: '仕上施工', part: '午前',
       text: '塗装工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         '塗装場所の気温が5℃以下の場合は、原則として塗装を行わない。',
@@ -1700,7 +1731,7 @@ const KENCHIKU1 = {
       explanation: '塗重ねは、先に塗った層が所定の乾燥時間を経て硬化してから行います。乾燥前に塗り重ねると、しわ・ちぢみ・乾燥不良などの欠陥が生じます。低温(5℃以下)・高湿度(85%以上)・結露時の塗装禁止は基本事項です。',
     },
     {
-      id: 'k1-f06', year: 2023, category: '仕上施工',
+      id: 'k1-f06', year: 2023, category: '仕上施工', part: '午前',
       text: 'せっこうボードの直張り工法(GL工法)に関する記述として、最も不適当なものはどれか。',
       choices: [
         '接着材の塗付け後、所定の時間内にボードを張り付ける。',
@@ -1712,7 +1743,7 @@ const KENCHIKU1 = {
       explanation: 'GL工法の接着材の間隔は、ボードの「周辺部を小さく(密に)、中央部を大きく」します(周辺部150〜200mm、中央部250〜300mm程度)。周辺部は衝撃を受けやすく、端部の浮きを防ぐためです。',
     },
     {
-      id: 'k1-f07', year: 2025, category: '仕上施工',
+      id: 'k1-f07', year: 2025, category: '仕上施工', part: '午前',
       text: 'アルミニウム製建具工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         'アルミニウム材と鋼材が接する箇所は、絶縁処理を行う。',
@@ -1724,7 +1755,7 @@ const KENCHIKU1 = {
       explanation: 'アルミニウムはアルカリに弱く、モルタル(強アルカリ性)に直接触れると腐食します。このため耐アルカリ塗料等での保護が必要です。異種金属(鋼材)との接触腐食を防ぐ絶縁処理も必須の配慮です。',
     },
     {
-      id: 'k1-f08', year: 2024, category: '仕上施工',
+      id: 'k1-f08', year: 2024, category: '仕上施工', part: '午前',
       text: 'ビニル床シート張りに関する記述として、最も不適当なものはどれか。',
       choices: [
         '張付けは、接着剤の所定のオープンタイムをとってから行う。',
@@ -1736,7 +1767,7 @@ const KENCHIKU1 = {
       explanation: '熱溶接工法では、接着剤が完全に硬化してから(張付け後12時間以上経過後)溝切り・溶接を行います。硬化前に溶接すると、シートの動きや接着不良の原因となります。',
     },
     {
-      id: 'k1-f09', year: 2024, category: '仕上施工',
+      id: 'k1-f09', year: 2024, category: '仕上施工', part: '午前',
       text: '硬質ウレタンフォーム吹付け工法による断熱工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         '吹付け厚さは、確認ピン等を用いて確認する。',
@@ -1748,7 +1779,7 @@ const KENCHIKU1 = {
       explanation: '厚く付きすぎた部分は、下地(仕上材)の取付けに支障となるため、カッターナイフ等で表層を除去して平滑にします。断熱上有利という理由で放置するのは誤りです。',
     },
     {
-      id: 'k1-f10', year: 2023, category: '仕上施工',
+      id: 'k1-f10', year: 2023, category: '仕上施工', part: '午前',
       text: '長尺金属板葺き屋根工事に関する記述として、最も不適当なものはどれか。',
       choices: [
         '金属板は、温度変化による伸縮を考慮して取り付ける。',
@@ -1762,7 +1793,7 @@ const KENCHIKU1 = {
 
     // ---------------- 施工管理法 ----------------
     {
-      id: 'k1-m01', year: 2025, category: '施工管理法',
+      id: 'k1-m01', year: 2025, category: '施工管理法', part: '午後',
       text: 'ネットワーク工程表に関する記述として、最も不適当なものはどれか。',
       choices: [
         'クリティカルパスは、トータルフロートが0の作業をつないだ経路である。',
@@ -1774,7 +1805,7 @@ const KENCHIKU1 = {
       explanation: 'クリティカルパスは複数本存在することがあります。所要日数が同じ最長経路が2本以上あれば、いずれもクリティカルパスです。フロートの定義(トータル/フリー)とあわせて頻出の論点です。',
     },
     {
-      id: 'k1-m02', year: 2025, category: '施工管理法',
+      id: 'k1-m02', year: 2025, category: '施工管理法', part: '午後',
       text: '工程計画に関する記述として、最も不適当なものはどれか。',
       choices: [
         '山崩しは、労務・資機材等の使用量を平準化するために行う。',
@@ -1786,7 +1817,7 @@ const KENCHIKU1 = {
       explanation: '山積みは、工程表上で日ごとに必要となる労務・資機材等の資源量を積み上げて図示する手法です。工期の算出手法ではありません。山積みで把握した資源の凸凹を、余裕時間の範囲で作業をずらして平準化するのが山崩しです。',
     },
     {
-      id: 'k1-m03', year: 2024, category: '施工管理法',
+      id: 'k1-m03', year: 2024, category: '施工管理法', part: '午後',
       text: '品質管理に用いる図表(QC七つ道具)に関する記述として、最も不適当なものはどれか。',
       choices: [
         'パレート図は、不良等の重点管理項目を把握するのに用いる。',
@@ -1798,7 +1829,7 @@ const KENCHIKU1 = {
       explanation: '散布図は、対になった2種類のデータの相関関係を把握するための図です。作業手順の時系列表現ではありません。パレート図=重点指向、特性要因図=魚の骨、ヒストグラム=分布、管理図=工程の安定状態、という対応を押さえます。',
     },
     {
-      id: 'k1-m04', year: 2024, category: '施工管理法',
+      id: 'k1-m04', year: 2024, category: '施工管理法', part: '午後',
       text: 'レディーミクストコンクリートの受入検査に関する記述として、最も不適当なものはどれか。',
       choices: [
         'スランプ18cmの指定に対する許容差は、±2.5cmである。',
@@ -1810,7 +1841,7 @@ const KENCHIKU1 = {
       explanation: '塩化物含有量の規定値は、原則0.30kg/m³以下です(承認を受けた場合0.60kg/m³以下)。スランプ8cm以上18cm以下の許容差±2.5cm、空気量±1.5%は正しい数値です。',
     },
     {
-      id: 'k1-m05', year: 2023, category: '施工管理法',
+      id: 'k1-m05', year: 2023, category: '施工管理法', part: '午後',
       text: '足場の安全に関する記述として、最も不適当なものはどれか。',
       choices: [
         '高さ2m以上の作業場所には、幅40cm以上の作業床を設ける。',
@@ -1822,7 +1853,7 @@ const KENCHIKU1 = {
       explanation: '床材と建地との隙間は「12cm未満」と定められています(労働安全衛生規則)。作業床の幅40cm以上、床材間の隙間3cm以下、手すり85cm以上+中桟という数値とセットで覚えます。',
     },
     {
-      id: 'k1-m06', year: 2023, category: '施工管理法',
+      id: 'k1-m06', year: 2023, category: '施工管理法', part: '午後',
       text: '移動式クレーンを用いる作業に関する記述として、最も不適当なものはどれか。',
       choices: [
         '定格荷重を超える荷重をかけて使用してはならない。',
@@ -1834,7 +1865,7 @@ const KENCHIKU1 = {
       explanation: '荷をつったままの運転位置からの離脱は、労働安全衛生法令で明確に禁止されています。定格荷重の遵守、アウトリガーの最大張出し、強風時の作業中止はいずれも基本的な遵守事項です。',
     },
     {
-      id: 'k1-m07', year: 2025, category: '施工管理法',
+      id: 'k1-m07', year: 2025, category: '施工管理法', part: '午後',
       text: '仮設計画に関する記述として、最も不適当なものはどれか。',
       choices: [
         '木造以外で高さ13m又は軒高9mを超える建築物の工事では、高さ1.8m以上の仮囲いを設ける。',
@@ -1846,7 +1877,7 @@ const KENCHIKU1 = {
       explanation: '仮囲いは第三者の災害防止・盗難防止等のために設けるもので、出入口は必要時以外閉鎖し施錠できる構造とします。開放しておくのは設置目的に反します。',
     },
     {
-      id: 'k1-m08', year: 2024, category: '施工管理法',
+      id: 'k1-m08', year: 2024, category: '施工管理法', part: '午後',
       text: '建設現場の安全衛生管理体制に関する記述として、最も不適当なものはどれか。ただし、ずい道工事等ではないものとする。',
       choices: [
         '統括安全衛生責任者は、元請・下請合わせて常時50人以上の労働者が従事する現場で選任する。',
@@ -1858,7 +1889,7 @@ const KENCHIKU1 = {
       explanation: '店社安全衛生管理者は、統括安全衛生責任者の選任義務がない中小規模現場(常時20人以上50人未満等)を店社から指導するために選任するもので、統括安全衛生責任者を選任した現場に重ねて置く義務はありません。',
     },
     {
-      id: 'k1-m09', year: 2024, category: '施工管理法',
+      id: 'k1-m09', year: 2024, category: '施工管理法', part: '午後',
       text: '鉄骨の建方に関する記述として、最も不適当なものはどれか。',
       choices: [
         '建方精度の測定は、温度による部材の伸縮の影響を考慮して行う。',
@@ -1870,7 +1901,7 @@ const KENCHIKU1 = {
       explanation: '建入れ直し(柱の倒れ等の修正)は、高力ボルトの「本締め前」に行います。本締め後は接合部が固定され修正できません。建方の進行に合わせ、有効な範囲ごとに速やかに行うのが原則です。',
     },
     {
-      id: 'k1-m10', year: 2023, category: '施工管理法',
+      id: 'k1-m10', year: 2023, category: '施工管理法', part: '午後',
       text: '施工計画に関する記述として、最も不適当なものはどれか。',
       choices: [
         '施工計画は、設計図書の内容と現場条件の調査結果を検討して立案する。',
@@ -1884,7 +1915,7 @@ const KENCHIKU1 = {
 
     // ---------------- 法規 ----------------
     {
-      id: 'k1-h01', year: 2025, category: '法規',
+      id: 'k1-h01', year: 2025, category: '法規', part: '午後',
       text: '建築基準法の手続きに関する記述として、最も不適当なものはどれか。',
       choices: [
         '建築主は、確認済証の交付を受けた後でなければ、確認が必要な工事に着手できない。',
@@ -1896,7 +1927,7 @@ const KENCHIKU1 = {
       explanation: '完了検査の申請は、工事が完了した日から「4日以内」に建築主事等に到達するように行わなければなりません。1か月以内という記述は誤りです。',
     },
     {
-      id: 'k1-h02', year: 2025, category: '法規',
+      id: 'k1-h02', year: 2025, category: '法規', part: '午後',
       text: '建設業法の主任技術者・監理技術者に関する記述として、最も不適当なものはどれか。',
       choices: [
         '発注者から直接請け負った建築一式工事で、下請契約の総額が7,000万円以上となる場合は、監理技術者を置かなければならない。',
@@ -1908,7 +1939,7 @@ const KENCHIKU1 = {
       explanation: '専任が必要な工事の監理技術者は、原則として現場ごとに専任です(監理技術者補佐を置いた場合に2現場まで兼任できる特例あり)。自由に何現場でも兼任できるという記述は誤りです。',
     },
     {
-      id: 'k1-h03', year: 2024, category: '法規',
+      id: 'k1-h03', year: 2024, category: '法規', part: '午後',
       text: '建設業法の一括下請負に関する記述として、最も不適当なものはどれか。',
       choices: [
         '建設業者は、原則として請け負った建設工事を一括して他人に請け負わせてはならない。',
@@ -1920,7 +1951,7 @@ const KENCHIKU1 = {
       explanation: '共同住宅を新築する建設工事は、民間工事であっても発注者の承諾の有無にかかわらず一括下請負が禁止されています。公共工事の全面禁止とあわせて覚えます。',
     },
     {
-      id: 'k1-h04', year: 2024, category: '法規',
+      id: 'k1-h04', year: 2024, category: '法規', part: '午後',
       text: '労働安全衛生法上、作業主任者を選任すべき作業に該当しないものはどれか。',
       choices: [
         '型枠支保工の組立て又は解体の作業',
@@ -1932,7 +1963,7 @@ const KENCHIKU1 = {
       explanation: '脚立を用いた高さ2m程度の清掃作業は、作業主任者の選任対象ではありません。型枠支保工、足場(つり足場・張出し足場又は高さ5m以上)、地山の掘削(2m以上)などは選任が必要な代表的作業です。',
     },
     {
-      id: 'k1-h05', year: 2023, category: '法規',
+      id: 'k1-h05', year: 2023, category: '法規', part: '午後',
       text: '労働基準法上、満18歳に満たない者を就かせてはならない業務に該当しないものはどれか。',
       choices: [
         'クレーンの運転の業務',
@@ -1944,7 +1975,7 @@ const KENCHIKU1 = {
       explanation: '資材の整理や清掃といった軽作業は年少者就業制限業務に該当しません。クレーン運転、高さ5m以上の墜落危険業務、建設機械の運転などは満18歳未満の者を就かせてはならない業務です。',
     },
     {
-      id: 'k1-h06', year: 2023, category: '法規',
+      id: 'k1-h06', year: 2023, category: '法規', part: '午後',
       text: '建設リサイクル法(建設工事に係る資材の再資源化等に関する法律)に定める特定建設資材に該当しないものはどれか。',
       choices: [
         'コンクリート',
@@ -1956,7 +1987,7 @@ const KENCHIKU1 = {
       explanation: '特定建設資材は、①コンクリート、②コンクリート及び鉄から成る建設資材、③木材、④アスファルト・コンクリートの4品目です。せっこうボードは含まれません(廃棄時は管理型処分が必要な廃棄物として別途扱われます)。',
     },
     {
-      id: 'k1-h07', year: 2025, category: '法規',
+      id: 'k1-h07', year: 2025, category: '法規', part: '午後',
       text: '騒音規制法の特定建設作業に関する記述として、最も不適当なものはどれか。',
       choices: [
         'くい打機を使用する作業は、特定建設作業に該当する場合がある。',
@@ -2267,16 +2298,16 @@ function renderHome(root) {
     </div>
 
     <div class="menu-grid">
-      <a class="menu-card" href="#/quiz">
-        <div class="mt">全問シャッフル演習 <span class="badge badge-free">無料</span></div>
-        <div class="md">全${questions.length}問からランダム出題。テンポよく解き進められます。</div>
+      <a class="menu-card" href="#/practice">
+        <div class="mt">演習をはじめる</div>
+        <div class="md">年度・区分・分野・出題順・解答方式を選んで出題(全${questions.length}問収録)。</div>
       </a>
       <a class="menu-card" href="#/quiz?mode=wrong">
-        <div class="mt">間違えた問題を復習 <span class="badge badge-free">無料</span></div>
+        <div class="mt">間違えた問題を復習</div>
         <div class="md">${wrongCount > 0 ? `現在 ${wrongCount} 問が復習対象です。` : 'まだ復習対象はありません。まず演習しましょう。'}</div>
       </a>
       <a class="menu-card" href="#/exam">
-        <div class="mt">模試をつくる <span class="badge badge-premium">プレミアム</span></div>
+        <div class="mt">模試をつくる <span class="badge badge-free">無料</span></div>
         <div class="md">統計から弱点分野を重点出題。時間を計って本番形式で。</div>
       </a>
       <a class="menu-card" href="#/stats">
@@ -2290,7 +2321,7 @@ function renderHome(root) {
 
     <h2 class="section-title">このアプリについて</h2>
     <div class="notice">
-      基本無料で使えます。模試の自動作成などの一部機能は将来プレミアム(有料)を予定していますが、
+      現在の機能はすべて無料です。将来一部機能を有料化する場合も、
       <strong>資格団体の規約で過去問の商用利用が認められない資格については、広告・課金なしの無料提供とします</strong>。
       収録している問題は、出題形式に合わせて作成した権利処理不要のオリジナル問題です。
       権利確認済みの実際の過去問は<a href="#/import">問題データの管理</a>から取り込めます。
@@ -2318,6 +2349,178 @@ function amDesc(mode) {
   return mode === 'end'
     ? 'まとめて採点:連続で解き進めて、最後に全問の答え合わせと解説を表示します。'
     : '一問一答:1問解答するごとに正誤と解説をすぐ表示します。';
+}
+
+// ---- js/views/practice.js ----
+// ============================================================
+// 演習設定:これから解く問題の条件を選んでから開始する
+//   年度(複数選択)/ 区分(午前・午後)/ 分野 / 出題順 /
+//   解答方式(一問一答・まとめて採点)/ 問題数
+// 例: 過去5年分の午前の問題を、年度バラバラのランダム順で一問一答
+// ============================================================
+
+
+
+function renderPractice(root) {
+  const exam = getActiveExam();
+  const questions = exam.questions;
+
+  const years = [...new Set(questions.map((q) => q.year))].sort((a, b) => b - a);
+  const parts = [...new Set(questions.map((q) => q.part).filter(Boolean))];
+  const cats = exam.categories;
+
+  const saved = getPracticeConfig() || {};
+  const settings = getSettings();
+  const sel = {
+    years: new Set((saved.years || years).filter((y) => years.includes(y))),
+    part: parts.includes(saved.part) ? saved.part : 'all',
+    cats: new Set((saved.cats || cats).filter((c) => cats.includes(c))),
+    order: saved.order === 'year' ? 'year' : 'random',
+    answerMode: saved.answerMode || settings.answerMode,
+    count: [0, 10, 20, 50].includes(saved.count) ? saved.count : 0,
+  };
+  if (sel.years.size === 0) years.forEach((y) => sel.years.add(y));
+  if (sel.cats.size === 0) cats.forEach((c) => sel.cats.add(c));
+
+  root.innerHTML = `
+    <div class="card">
+      <h2>演習をはじめる</h2>
+      <p class="sub">${escapeHtml(exam.name)} — これから解く問題の条件を選んでください</p>
+
+      <div class="field">
+        <span class="flabel">年度 <button class="table-toggle" id="years-all" type="button">すべて選択/解除</button></span>
+        <div class="chip-group" id="years-group">
+          ${years.map((y) => `<button type="button" class="chip ${sel.years.has(y) ? 'active' : ''}" data-year="${y}">${y}年度</button>`).join('')}
+        </div>
+      </div>
+
+      ${parts.length ? `
+      <div class="field">
+        <span class="flabel">区分</span>
+        <div class="seg" id="part-seg">
+          <button type="button" data-part="all" class="${sel.part === 'all' ? 'active' : ''}">すべて</button>
+          ${parts.map((p) => `<button type="button" data-part="${escapeHtml(p)}" class="${sel.part === p ? 'active' : ''}">${escapeHtml(p)}</button>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="field">
+        <span class="flabel">分野 <button class="table-toggle" id="cats-all" type="button">すべて選択/解除</button></span>
+        <div class="chip-group" id="cats-group">
+          ${cats.map((c) => `<button type="button" class="chip ${sel.cats.has(c) ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="flabel">出題順</span>
+        <div class="seg" id="order-seg">
+          <button type="button" data-order="random" class="${sel.order === 'random' ? 'active' : ''}">ランダム(年度バラバラ)</button>
+          <button type="button" data-order="year" class="${sel.order === 'year' ? 'active' : ''}">年度順</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="flabel">解答方式</span>
+        <div class="seg" id="am-seg">
+          <button type="button" data-amode="each" class="${sel.answerMode === 'each' ? 'active' : ''}">一問一答(すぐ採点)</button>
+          <button type="button" data-amode="end" class="${sel.answerMode === 'end' ? 'active' : ''}">連続解答(最後に採点)</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="flabel">問題数</span>
+        <div class="seg" id="count-seg">
+          <button type="button" data-count="0" class="${sel.count === 0 ? 'active' : ''}">すべて</button>
+          <button type="button" data-count="10" class="${sel.count === 10 ? 'active' : ''}">10問</button>
+          <button type="button" data-count="20" class="${sel.count === 20 ? 'active' : ''}">20問</button>
+          <button type="button" data-count="50" class="${sel.count === 50 ? 'active' : ''}">50問</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-lg" id="start-practice" type="button"></button>
+      <p class="sub" id="practice-status" role="status" style="margin:10px 0 0"></p>
+    </div>
+  `;
+
+  const startBtn = root.querySelector('#start-practice');
+
+  function matched() {
+    return questions.filter((q) =>
+      sel.years.has(q.year)
+      && (sel.part === 'all' || (q.part || '') === sel.part)
+      && sel.cats.has(q.category));
+  }
+
+  function updateStart() {
+    const n = matched().length;
+    const shown = sel.count && sel.count < n ? sel.count : n;
+    startBtn.textContent = n === 0 ? '該当する問題がありません' : `この条件で開始(${shown}問)`;
+    startBtn.disabled = n === 0;
+  }
+
+  // 年度・分野チップ
+  root.querySelector('#years-group').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-year]');
+    if (!chip) return;
+    const y = Number(chip.dataset.year);
+    sel.years.has(y) ? sel.years.delete(y) : sel.years.add(y);
+    chip.classList.toggle('active');
+    updateStart();
+  });
+  root.querySelector('#cats-group').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-cat]');
+    if (!chip) return;
+    const c = chip.dataset.cat;
+    sel.cats.has(c) ? sel.cats.delete(c) : sel.cats.add(c);
+    chip.classList.toggle('active');
+    updateStart();
+  });
+  root.querySelector('#years-all').addEventListener('click', () => {
+    const all = sel.years.size === years.length;
+    sel.years.clear();
+    if (!all) years.forEach((y) => sel.years.add(y));
+    root.querySelectorAll('[data-year]').forEach((c) => c.classList.toggle('active', !all));
+    updateStart();
+  });
+  root.querySelector('#cats-all').addEventListener('click', () => {
+    const all = sel.cats.size === cats.length;
+    sel.cats.clear();
+    if (!all) cats.forEach((c) => sel.cats.add(c));
+    root.querySelectorAll('[data-cat]').forEach((c) => c.classList.toggle('active', !all));
+    updateStart();
+  });
+
+  // セグメント類
+  function segHandler(segId, dataKey, apply) {
+    const seg = root.querySelector(segId);
+    if (!seg) return;
+    seg.addEventListener('click', (e) => {
+      const btn = e.target.closest(`[data-${dataKey}]`);
+      if (!btn) return;
+      seg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+      apply(btn.dataset[dataKey === 'amode' ? 'amode' : dataKey]);
+      updateStart();
+    });
+  }
+  segHandler('#part-seg', 'part', (v) => { sel.part = v; });
+  segHandler('#order-seg', 'order', (v) => { sel.order = v; });
+  segHandler('#am-seg', 'amode', (v) => { sel.answerMode = v; });
+  segHandler('#count-seg', 'count', (v) => { sel.count = Number(v); });
+
+  startBtn.addEventListener('click', () => {
+    const config = {
+      years: [...sel.years],
+      part: sel.part,
+      cats: [...sel.cats],
+      order: sel.order,
+      answerMode: sel.answerMode,
+      count: sel.count,
+    };
+    savePracticeConfig(config);
+    updateSettings({ answerMode: sel.answerMode }); // 全体の既定も揃える
+    location.hash = '#/quiz?mode=custom';
+  });
+
+  updateStart();
 }
 
 // ---- js/views/quiz.js ----
@@ -2352,6 +2555,29 @@ function renderQuiz(root, params) {
     qids = r.qids;
     label = r.label;
     answerMode = r.answerMode || 'each';
+  } else if (mode === 'custom') {
+    // 演習設定画面(#/practice)で選んだ条件で出題
+    const cfg = getPracticeConfig();
+    if (!cfg) { location.hash = '#/practice'; return; }
+    const years = new Set(cfg.years || []);
+    const cats = new Set(cfg.cats || []);
+    let pool = QUESTIONS.filter((q) =>
+      (years.size === 0 || years.has(q.year))
+      && (!cfg.part || cfg.part === 'all' || (q.part || '') === cfg.part)
+      && (cats.size === 0 || cats.has(q.category)));
+    if (cfg.order === 'year') {
+      pool = [...pool].sort((a, b) => (b.year - a.year) || String(a.id).localeCompare(String(b.id)));
+    } else {
+      pool = shuffle(pool);
+    }
+    if (cfg.count > 0) pool = pool.slice(0, cfg.count);
+    qids = pool.map((q) => q.id);
+    answerMode = cfg.answerMode || answerMode;
+    const yearsLabel = (cfg.years || []).length === new Set(QUESTIONS.map((q) => q.year)).size
+      ? '全年度' : `${[...(cfg.years || [])].sort().join('・')}年度`;
+    label = [yearsLabel,
+      cfg.part && cfg.part !== 'all' ? cfg.part : null,
+      cfg.order === 'year' ? '年度順' : 'ランダム'].filter(Boolean).join('・');
   } else if (mode === 'wrong') {
     const latest = getLatestResults();
     qids = shuffle(QUESTIONS.filter((q) => latest.get(q.id)?.correct === false).map((q) => q.id));
@@ -2487,8 +2713,8 @@ function renderQuiz(root, params) {
         <div class="quiz-left">
           <div class="q-card fade-in">
             <div class="q-meta">
-              <span class="badge">${q.category}</span>
-              <span class="badge">${q.year}年 サンプル</span>
+              <span class="badge">${escapeHtml(q.category)}</span>
+              <span class="badge">${q.year}年度${q.part ? '・' + escapeHtml(q.part) : ''}</span>
               <span class="badge">${escapeHtml(label)}</span>
             </div>
             <p class="q-text">${escapeHtml(q.text)}</p>
@@ -2786,10 +3012,9 @@ function renderExam(root) {
   // ============ 1. 設定画面 ============
   function showSetup() {
     stopTimer();
-    const premium = isPremium();
     root.innerHTML = `
       <div class="card">
-        <h2>模試をつくる <span class="badge badge-premium">プレミアム</span></h2>
+        <h2>模試をつくる <span class="badge badge-free">無料</span></h2>
         <p class="sub">出題方法と問題数・制限時間を選ぶと、その場で模試を自動作成します。</p>
 
         <div class="field">
@@ -2799,14 +3024,14 @@ function renderExam(root) {
               <input type="radio" name="mode" value="balanced" checked>
               <span>
                 <span class="mc-t">分野バランス型 <span class="badge badge-free">無料</span></span>
-                <span class="mc-d">3分野から均等に出題する標準的な模試です。</span>
+                <span class="mc-d">全分野からバランスよく、年度を混ぜて出題する標準的な模試です。</span>
               </span>
             </label>
             <label class="mode-card" data-mode="weak">
               <input type="radio" name="mode" value="weak">
               <span>
-                <span class="mc-t">弱点強化型 <span class="badge badge-premium">プレミアム</span></span>
-                <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。${premium ? '' : '(プロトタイプでは無料で体験できます)'}</span>
+                <span class="mc-t">弱点強化型 <span class="badge badge-free">無料</span></span>
+                <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。</span>
               </span>
             </label>
           </div>
@@ -2834,7 +3059,7 @@ function renderExam(root) {
       </div>
 
       <div class="notice">
-        プレミアムは将来の有料機能の想定です。過去問の利用規約で収益化が認められない資格では、この機能も無料で提供します。
+        模試は年度をバラバラに混ぜて出題し、結果は分野別の内訳で表示します。
       </div>
     `;
 
@@ -2861,7 +3086,6 @@ function renderExam(root) {
       const mode = root.querySelector('input[name="mode"]:checked').value;
       const count = Number(root.querySelector('[data-seg="count"] .active').dataset.v);
       const minutes = Number(root.querySelector('[data-seg="time"] .active').dataset.v);
-      if (mode === 'weak' && !isPremium()) setPremium(true); // デモ:体験開始でフラグON
       startExam(buildExam(mode, count), minutes, mode);
     });
   }
@@ -3213,7 +3437,7 @@ function renderStats(root) {
 
 // ---- js/views/settings.js ----
 // ============================================================
-// 設定:テーマ / 自動で次へ / プレミアム(デモ) / データリセット
+// 設定:テーマ / 解答方式 / 自動で次へ / データリセット
 // ============================================================
 
 function renderSettings(root) {
@@ -3267,16 +3491,6 @@ function renderSettings(root) {
         </select>
       </div>
 
-      <div class="setting-row">
-        <div class="sr-main">
-          <div class="sr-title">プレミアム(デモ)<span class="badge badge-premium" style="margin-left:6px">プレミアム</span></div>
-          <div class="sr-desc">弱点強化型模試などの有料予定機能。プロトタイプでは自由に切り替えられます</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="premium-toggle" ${isPremium() ? 'checked' : ''}>
-          <span class="track"></span>
-        </label>
-      </div>
     </div>
 
     <div class="card">
@@ -3327,9 +3541,6 @@ function renderSettings(root) {
   });
   root.querySelector('#auto-delay').addEventListener('change', (e) => {
     updateSettings({ autoAdvanceDelay: Number(e.target.value) });
-  });
-  root.querySelector('#premium-toggle').addEventListener('change', (e) => {
-    setPremium(e.target.checked);
   });
   root.querySelector('#reset-btn').addEventListener('click', () => {
     if (confirm('学習データをすべて削除します。よろしいですか?')) {
@@ -3437,11 +3648,12 @@ const SAMPLE_JSON = `{
     {
       "id": "r6-001",
       "year": 2024,
+      "part": "午前",
       "category": "建築学",
       "text": "問題文をここに入力…",
       "choices": ["選択肢1", "選択肢2", "選択肢3", "選択肢4"],
       "answer": 2,
-      "explanation": "解説をここに入力…(answer は 0 始まりの正解番号)"
+      "explanation": "解説をここに入力…(answer は 0 始まりの正解番号、part は任意)"
     }
   ]
 }`;
@@ -3468,10 +3680,15 @@ function renderImport(root) {
               <span class="ri-text">${escapeHtml(e.name)}</span>
               <span class="cs" style="color:var(--muted); font-size:12px">${e.questions.length}問</span>
               ${importedIds.has(e.id) ? `
+                ${e.sourceUrl ? `<button class="btn" data-refresh="${escapeHtml(e.id)}" type="button" title="配信URLから再取得">更新</button>` : ''}
                 <button class="btn" data-export="${escapeHtml(e.id)}" type="button">書き出し</button>
                 <button class="btn" data-del="${escapeHtml(e.id)}" type="button" style="color:var(--ng); border-color:var(--ng)">削除</button>` : ''}
             </div>`).join('')}
         </div>
+        <div style="margin-top:12px">
+          <button class="btn" id="validate-all" type="button">全データを検証(正解番号・重複・解説の有無)</button>
+        </div>
+        <div id="validate-result"></div>
       </div>
 
       <div class="card">
@@ -3483,9 +3700,10 @@ function renderImport(root) {
           <input class="select" id="conv-name" type="text" style="width:100%"
             value="1級建築施工管理技士 過去問(自分用)">
         </div>
-        <div class="field" style="display:flex; gap:10px">
-          <label style="flex:1">年度(数字)<input class="select" id="conv-year" type="number" value="2024" style="width:100%"></label>
-          <label style="flex:1">既定の分野<input class="select" id="conv-cat" type="text" value="未分類" style="width:100%"></label>
+        <div class="field" style="display:flex; gap:10px; flex-wrap:wrap">
+          <label style="flex:1; min-width:110px">年度(数字)<input class="select" id="conv-year" type="number" value="2024" style="width:100%"></label>
+          <label style="flex:1; min-width:110px">既定の分野<input class="select" id="conv-cat" type="text" value="未分類" style="width:100%"></label>
+          <label style="flex:1; min-width:110px">既定の区分<input class="select" id="conv-part" type="text" placeholder="午前(任意)" style="width:100%"></label>
         </div>
         <div class="field">
           <textarea class="textarea" id="conv-text" style="min-height:160px; font-size:13px" placeholder="問題ごとに空行で区切って貼り付けます。例:
@@ -3505,7 +3723,16 @@ function renderImport(root) {
 
       <div class="card">
         <h2>JSON から取り込む</h2>
-        <p class="sub">下の形式の JSON を貼り付けて取り込みます。データはこの端末のブラウザ内に保存されます。</p>
+        <p class="sub">下の形式の JSON を貼り付けるか、自分のデータ配信URLから取得して取り込みます。データはこの端末のブラウザ内に保存されます。</p>
+
+        <div class="field">
+          <label for="import-url">データ配信URL(任意)</label>
+          <div style="display:flex; gap:8px">
+            <input class="select" id="import-url" type="url" style="flex:1" placeholder="https://gist.githubusercontent.com/…/kakomon.json">
+            <button class="btn" id="fetch-url" type="button">URLから取得</button>
+          </div>
+          <p class="sub" style="margin:6px 0 0">一度PCで変換したJSONを自分の非公開Gist等に置いておくと、他の端末ではURLを入れるだけで取り込めます(貼り付け不要)。</p>
+        </div>
 
         <div class="field">
           <textarea class="textarea" id="import-json" style="min-height:180px; font-family:ui-monospace, monospace; font-size:12.5px" placeholder='${escapeHtml(SAMPLE_JSON)}'></textarea>
@@ -3550,6 +3777,20 @@ function renderImport(root) {
       root.querySelector('#import-json').value = SAMPLE_JSON;
     });
 
+    // 全資格データの整合性チェック(問題と答えの正当性の管理)
+    root.querySelector('#validate-all').addEventListener('click', () => {
+      const report = validateAllExams(getAllExams());
+      const box = root.querySelector('#validate-result');
+      box.innerHTML = `
+        <div class="notice" style="margin-top:12px">
+          <strong>検証結果:${report.total}問中、要確認 ${report.issues.length}件</strong><br>
+          ${report.issues.length
+            ? report.issues.slice(0, 30).map((i) => `・${escapeHtml(i)}`).join('<br>')
+              + (report.issues.length > 30 ? `<br>ほか ${report.issues.length - 30} 件` : '')
+            : 'すべての問題に有効な正解番号が設定されており、IDの重複もありません。'}
+        </div>`;
+    });
+
     // 書き出し:JSON を下の入力欄に表示 + 可能ならコピー
     // (別の端末ではその JSON を貼り付けて「取り込む」だけで同じデータが使える)
     root.querySelectorAll('[data-export]').forEach((btn) => {
@@ -3578,6 +3819,7 @@ function renderImport(root) {
       const defaults = {
         year: Number(root.querySelector('#conv-year').value) || new Date().getFullYear(),
         category: root.querySelector('#conv-cat').value.trim() || '未分類',
+        part: root.querySelector('#conv-part').value.trim(),
       };
       const { questions, warnings } = parseQuestionsText(text, defaults);
       if (questions.length === 0) {
@@ -3601,30 +3843,106 @@ function renderImport(root) {
       root.querySelector('#import-json').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
-    root.querySelector('#do-import').addEventListener('click', () => {
+    function importJson(raw, sourceUrl = '') {
       if (!root.querySelector('#rights-check').checked) {
         statusEl.textContent = '取り込む前に、権利確認のチェックを入れてください。';
-        return;
+        return false;
       }
-      const raw = root.querySelector('#import-json').value.trim();
-      if (!raw) {
+      if (!raw.trim()) {
         statusEl.textContent = 'JSON を貼り付けてください。';
-        return;
+        return false;
       }
       try {
-        const exam = normalizeExam(JSON.parse(raw));
+        const exam = normalizeExam(JSON.parse(raw), { sourceUrl });
         addImportedExam(exam);
         updateSettings({ examId: exam.id });
         draw(); // 一覧を更新(再描画後の要素にメッセージを表示する)
         root.querySelector('#import-status').textContent =
           `「${exam.name}」(${exam.questions.length}問)を取り込み、選択中の資格に設定しました。`;
+        return true;
       } catch (err) {
         statusEl.textContent = `取り込めませんでした: ${err.message}`;
+        return false;
       }
+    }
+
+    root.querySelector('#do-import').addEventListener('click', () => {
+      importJson(root.querySelector('#import-json').value, root.querySelector('#import-url').value.trim());
+    });
+
+    // データ配信URLから取得(チェック済みなら即取り込み)
+    async function fetchFromUrl(url, { autoImport }) {
+      statusEl.textContent = '取得中…';
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        JSON.parse(text); // 形式チェック
+        if (autoImport && root.querySelector('#rights-check').checked) {
+          importJson(text, url);
+        } else {
+          root.querySelector('#import-json').value = text;
+          statusEl.textContent = '取得しました。内容を確認し、権利確認にチェックのうえ「取り込む」を押してください。';
+        }
+        return text;
+      } catch (err) {
+        statusEl.textContent = `取得できませんでした: ${err.message}(URLが公開設定か、JSONとして正しいか確認してください)`;
+        return null;
+      }
+    }
+
+    root.querySelector('#fetch-url').addEventListener('click', () => {
+      const url = root.querySelector('#import-url').value.trim();
+      if (!url) { statusEl.textContent = 'URLを入力してください。'; return; }
+      fetchFromUrl(url, { autoImport: true });
+    });
+
+    // 配信URLからの再取得(更新)
+    root.querySelectorAll('[data-refresh]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const exam = getImportedExams().find((e) => e.id === btn.dataset.refresh);
+        if (!exam?.sourceUrl) return;
+        root.querySelector('#import-url').value = exam.sourceUrl;
+        if (!root.querySelector('#rights-check').checked) root.querySelector('#rights-check').checked = true;
+        await fetchFromUrl(exam.sourceUrl, { autoImport: true });
+      });
     });
   }
 
   draw();
+}
+
+// 全資格データの整合性チェック:
+//  - 正解番号が選択肢の範囲内にあるか
+//  - 問題IDが全資格を通して一意か
+//  - 選択肢の重複、解説の欠落(参考情報)
+function validateAllExams(exams) {
+  const issues = [];
+  const seenIds = new Map(); // qid -> exam name
+  let total = 0;
+  let noExplanation = 0;
+
+  for (const exam of exams) {
+    for (const q of exam.questions) {
+      total += 1;
+      const where = `[${exam.name}] ${q.id}`;
+      if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer >= q.choices.length) {
+        issues.push(`${where}: 正解番号(${q.answer})が選択肢の範囲外です`);
+      }
+      if (seenIds.has(q.id)) {
+        issues.push(`${where}: 問題ID が「${seenIds.get(q.id)}」と重複しています(成績が混ざる原因になります)`);
+      } else {
+        seenIds.set(q.id, exam.name);
+      }
+      if (new Set(q.choices.map((c) => c.trim())).size !== q.choices.length) {
+        issues.push(`${where}: 同じ内容の選択肢が重複しています`);
+      }
+      if (!q.text.trim()) issues.push(`${where}: 問題文が空です`);
+      if (!q.explanation) noExplanation += 1;
+    }
+  }
+  if (noExplanation > 0) issues.push(`解説が未入力の問題が ${noExplanation} 問あります(動作には支障ありません)`);
+  return { total, issues };
 }
 
 // 貼り付けテキストを問題データに変換する簡易パーサ
@@ -3654,15 +3972,17 @@ function parseQuestionsText(text, defaults = {}) {
     let explanation = '';
     let category = defaults.category || '未分類';
     let year = defaults.year || new Date().getFullYear();
+    let part = defaults.part || '';
     let inExplanation = false;
 
     for (const line of lines) {
       const ans = line.match(answerRe);
       if (ans) { answer = toNum(ans[1], ans[2]) - 1; inExplanation = false; continue; }
-      const meta = line.match(/^\s*(解説|分野|年度)\s*[:：]\s*(.*)$/);
+      const meta = line.match(/^\s*(解説|分野|年度|区分)\s*[:：]\s*(.*)$/);
       if (meta) {
         if (meta[1] === '解説') { explanation = meta[2]; inExplanation = true; }
         else if (meta[1] === '分野') { category = meta[2].trim() || category; inExplanation = false; }
+        else if (meta[1] === '区分') { part = meta[2].trim(); inExplanation = false; }
         else { year = Number(meta[2]) || year; inExplanation = false; }
         continue;
       }
@@ -3685,6 +4005,7 @@ function parseQuestionsText(text, defaults = {}) {
     // id は取り込み時に資格ID接頭辞付きで採番される(normalizeExam)
     questions.push({
       year, category, text: qText, choices, answer,
+      ...(part ? { part } : {}),
       explanation: explanation.trim(),
     });
   });
@@ -3693,7 +4014,7 @@ function parseQuestionsText(text, defaults = {}) {
 }
 
 // 取り込みデータの検証と補完
-function normalizeExam(data) {
+function normalizeExam(data, { sourceUrl = '' } = {}) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('JSON のルートはオブジェクトにしてください。');
   }
@@ -3720,6 +4041,7 @@ function normalizeExam(data) {
     return {
       id: String(q.id || `${examId}-q${i + 1}`),
       year: Number(q.year) || new Date().getFullYear(),
+      ...(q.part ? { part: String(q.part) } : {}),
       category: String(q.category || 'その他'),
       text: String(q.text),
       choices: q.choices.map(String),
@@ -3736,6 +4058,7 @@ function normalizeExam(data) {
     id: examId,
     name: String(data.name),
     description: String(data.description || '取り込んだ問題データ'),
+    ...(sourceUrl ? { sourceUrl } : {}),
     categories,
     questions,
   };
@@ -3753,9 +4076,11 @@ function normalizeExam(data) {
 
 
 
+
 const routes = {
   '': renderHome,
   'quiz': renderQuiz,
+  'practice': renderPractice,
   'exam': renderExam,
   'stats': renderStats,
   'settings': renderSettings,

@@ -4,7 +4,7 @@
 //  - タイマー付き通し解答 → 採点 → 分野別内訳
 // ============================================================
 import { getActiveExam, shuffle } from '../data/questions.js';
-import { getCategoryStats, recordAnswer, isPremium, setPremium } from '../storage.js';
+import { getCategoryStats, recordAnswer } from '../storage.js';
 import { renderBarChart } from '../components/chart.js';
 import { MARK_CYCLE, MARK_ICON, escapeHtml } from '../utils.js';
 
@@ -16,10 +16,9 @@ export function renderExam(root) {
   // ============ 1. 設定画面 ============
   function showSetup() {
     stopTimer();
-    const premium = isPremium();
     root.innerHTML = `
       <div class="card">
-        <h2>模試をつくる <span class="badge badge-premium">プレミアム</span></h2>
+        <h2>模試をつくる <span class="badge badge-free">無料</span></h2>
         <p class="sub">出題方法と問題数・制限時間を選ぶと、その場で模試を自動作成します。</p>
 
         <div class="field">
@@ -29,14 +28,14 @@ export function renderExam(root) {
               <input type="radio" name="mode" value="balanced" checked>
               <span>
                 <span class="mc-t">分野バランス型 <span class="badge badge-free">無料</span></span>
-                <span class="mc-d">3分野から均等に出題する標準的な模試です。</span>
+                <span class="mc-d">全分野からバランスよく、年度を混ぜて出題する標準的な模試です。</span>
               </span>
             </label>
             <label class="mode-card" data-mode="weak">
               <input type="radio" name="mode" value="weak">
               <span>
-                <span class="mc-t">弱点強化型 <span class="badge badge-premium">プレミアム</span></span>
-                <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。${premium ? '' : '(プロトタイプでは無料で体験できます)'}</span>
+                <span class="mc-t">弱点強化型 <span class="badge badge-free">無料</span></span>
+                <span class="mc-d">あなたの解答統計から正答率の低い分野を重点的に出題します。</span>
               </span>
             </label>
           </div>
@@ -64,7 +63,7 @@ export function renderExam(root) {
       </div>
 
       <div class="notice">
-        プレミアムは将来の有料機能の想定です。過去問の利用規約で収益化が認められない資格では、この機能も無料で提供します。
+        模試は年度をバラバラに混ぜて出題し、結果は分野別の内訳で表示します。
       </div>
     `;
 
@@ -91,7 +90,6 @@ export function renderExam(root) {
       const mode = root.querySelector('input[name="mode"]:checked').value;
       const count = Number(root.querySelector('[data-seg="count"] .active').dataset.v);
       const minutes = Number(root.querySelector('[data-seg="time"] .active').dataset.v);
-      if (mode === 'weak' && !isPremium()) setPremium(true); // デモ:体験開始でフラグON
       startExam(buildExam(mode, count), minutes, mode);
     });
   }

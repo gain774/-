@@ -59,16 +59,16 @@ export function renderHome(root) {
     </div>
 
     <div class="menu-grid">
-      <a class="menu-card" href="#/quiz">
-        <div class="mt">全問シャッフル演習 <span class="badge badge-free">無料</span></div>
-        <div class="md">全${questions.length}問からランダム出題。テンポよく解き進められます。</div>
+      <a class="menu-card" href="#/practice">
+        <div class="mt">演習をはじめる</div>
+        <div class="md">年度・区分・分野・出題順・解答方式を選んで出題(全${questions.length}問収録)。</div>
       </a>
       <a class="menu-card" href="#/quiz?mode=wrong">
-        <div class="mt">間違えた問題を復習 <span class="badge badge-free">無料</span></div>
+        <div class="mt">間違えた問題を復習</div>
         <div class="md">${wrongCount > 0 ? `現在 ${wrongCount} 問が復習対象です。` : 'まだ復習対象はありません。まず演習しましょう。'}</div>
       </a>
       <a class="menu-card" href="#/exam">
-        <div class="mt">模試をつくる <span class="badge badge-premium">プレミアム</span></div>
+        <div class="mt">模試をつくる <span class="badge badge-free">無料</span></div>
         <div class="md">統計から弱点分野を重点出題。時間を計って本番形式で。</div>
       </a>
       <a class="menu-card" href="#/stats">
@@ -82,7 +82,7 @@ export function renderHome(root) {
 
     <h2 class="section-title">このアプリについて</h2>
     <div class="notice">
-      基本無料で使えます。模試の自動作成などの一部機能は将来プレミアム(有料)を予定していますが、
+      現在の機能はすべて無料です。将来一部機能を有料化する場合も、
       <strong>資格団体の規約で過去問の商用利用が認められない資格については、広告・課金なしの無料提供とします</strong>。
       収録している問題は、出題形式に合わせて作成した権利処理不要のオリジナル問題です。
       権利確認済みの実際の過去問は<a href="#/import">問題データの管理</a>から取り込めます。

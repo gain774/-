@@ -22,6 +22,7 @@ const JS_ORDER = [
   'js/components/drawing.js',
   'js/components/chart.js',
   'js/views/home.js',
+  'js/views/practice.js',
   'js/views/quiz.js',
   'js/views/exam.js',
   'js/views/stats.js',

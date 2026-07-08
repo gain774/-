@@ -1,7 +1,7 @@
 // ============================================================
-// 設定:テーマ / 自動で次へ / プレミアム(デモ) / データリセット
+// 設定:テーマ / 解答方式 / 自動で次へ / データリセット
 // ============================================================
-import { getSettings, updateSettings, isPremium, setPremium, resetAll } from '../storage.js';
+import { getSettings, updateSettings, resetAll } from '../storage.js';
 
 export function renderSettings(root) {
   const s = getSettings();
@@ -54,16 +54,6 @@ export function renderSettings(root) {
         </select>
       </div>
 
-      <div class="setting-row">
-        <div class="sr-main">
-          <div class="sr-title">プレミアム(デモ)<span class="badge badge-premium" style="margin-left:6px">プレミアム</span></div>
-          <div class="sr-desc">弱点強化型模試などの有料予定機能。プロトタイプでは自由に切り替えられます</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="premium-toggle" ${isPremium() ? 'checked' : ''}>
-          <span class="track"></span>
-        </label>
-      </div>
     </div>
 
     <div class="card">
@@ -114,9 +104,6 @@ export function renderSettings(root) {
   });
   root.querySelector('#auto-delay').addEventListener('change', (e) => {
     updateSettings({ autoAdvanceDelay: Number(e.target.value) });
-  });
-  root.querySelector('#premium-toggle').addEventListener('change', (e) => {
-    setPremium(e.target.checked);
   });
   root.querySelector('#reset-btn').addEventListener('click', () => {
     if (confirm('学習データをすべて削除します。よろしいですか?')) {
